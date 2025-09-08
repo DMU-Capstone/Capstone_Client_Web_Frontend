@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub 커뮤니티 지원
+    url: https://github.com/orgs/community/discussions
+    about: GitHub 커뮤니티에서 도움을 받아보세요.

@@ -1,0 +1,58 @@
+name: ✨ 기능 요청
+description: 새로운 기능을 제안해주세요!
+title: "[Feat]"
+assignees: [""]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        새로운 기능을 제안해주세요! 아래 양식을 작성해주세요.
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: 💡 기능 설명
+      description: 어떤 기능을 원하시나요?
+      placeholder: 원하는 기능에 대해 자세히 설명해주세요
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-solution
+    attributes:
+      label: 🎯 문제 해결
+      description: 이 기능이 어떤 문제를 해결하나요?
+      placeholder: 이 기능이 해결하고자 하는 문제나 불편함을 설명해주세요
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation-suggestion
+    attributes:
+      label: 💭 제안 사항
+      description: 어떻게 구현하면 좋을까요?
+      placeholder: 구현 방법이나 UI/UX에 대한 아이디어를 제안해주세요
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 🔥 우선순위
+      description: 이 기능의 우선순위를 선택해주세요
+      options:
+        - 낮음 (언젠가 구현)
+        - 보통 (다음 스프린트에서 고려)
+        - 높음 (현재 스프린트에서 처리)
+        - 긴급 (즉시 구현 필요)
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: 📸 예시/모킹
+      description: UI 관련이라면 스크린샷이나 모킹을 첨부해주세요
+      placeholder: 스크린샷, 와이어프레임, 또는 모킹 이미지를 첨부해주세요
+    validations:
+      required: false
