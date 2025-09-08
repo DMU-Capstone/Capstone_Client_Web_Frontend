@@ -11,7 +11,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   onSelectMenu,
   selectedMenu,
 }) => {
+<<<<<<< HEAD
+=======
   const [isCollapsed, setIsCollapsed] = useState(false);
+>>>>>>> origin/main
   const [expandedMenus, setExpandedMenus] = useState<string[]>(["관리페이지"]);
 
   const menuItems = [
@@ -47,6 +50,23 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div
       className="fixed top-0 left-0 bottom-0 bg-blue-600 border-r border-blue-700 transition-all duration-300 z-50"
+<<<<<<< HEAD
+      style={{ width: `${width}px` }}
+    >
+      <div className="px-4 py-4 border-b border-blue-700">
+        <div className="flex items-center mb-3">
+          <div className="w-16 h-8 bg-white border border-gray-800 flex items-center justify-center">
+            <span className="text-sm font-bold text-gray-800">로고</span>
+          </div>
+        </div>
+        <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center">
+          <span className="text-white text-sm">👤</span>
+        </div>
+      </div>
+
+      <div className="py-2">
+        {menuItems.map((menu) => (
+=======
       style={{ width: `${isCollapsed ? 80 : width}px` }}
     >
       <div className="px-4 py-4 border-b border-blue-700">
@@ -66,6 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       <div className="py-2">
         {menuItems.map((menu, index) => (
+>>>>>>> origin/main
           <div key={menu.id}>
             <button
               className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-all ${
@@ -76,6 +97,18 @@ const Sidebar: React.FC<SidebarProps> = ({
                   : "text-white hover:bg-blue-500"
               }`}
               onClick={() => handleMenuClick(menu.id, menu.hasSubmenu)}
+<<<<<<< HEAD
+            >
+              <span>{menu.label}</span>
+              {menu.hasSubmenu && (
+                <span
+                  className={`transition-transform text-white ${
+                    expandedMenus.includes(menu.id) ? "rotate-180" : ""
+                  }`}
+                >
+                  ▼
+                </span>
+=======
               title={isCollapsed ? menu.label : undefined}
             >
               {!isCollapsed && (
@@ -91,12 +124,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </span>
                   )}
                 </>
+>>>>>>> origin/main
               )}
             </button>
 
             {menu.hasSubmenu &&
+<<<<<<< HEAD
+              expandedMenus.includes(menu.id) && (
+=======
               expandedMenus.includes(menu.id) &&
               !isCollapsed && (
+>>>>>>> origin/main
                 <div className="bg-blue-500">
                   {menu.submenu?.map((submenu) => (
                     <button

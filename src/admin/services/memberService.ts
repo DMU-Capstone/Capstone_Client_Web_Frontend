@@ -1,3 +1,16 @@
+<<<<<<< HEAD
+export const getAllMembers = () => {
+  return Promise.resolve({ data: { content: [] } });
+};
+
+export const deleteMember = (_id: number, _data: any) => {
+  return Promise.resolve();
+};
+
+export const updateMember = (_id: number, _data: any) => {
+  return Promise.resolve();
+};
+=======
 import api from '../config/api';
 
 //전체 유저 조회
@@ -35,3 +48,4 @@ export const updateMember = (id: number, data: any) =>
 //삭제
 export const deleteMember = (id: number, data: any) =>
     api.delete(`/admin/users/${id}`, { data })
+>>>>>>> origin/main

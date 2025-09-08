@@ -1,3 +1,15 @@
+<<<<<<< HEAD
+const AdManager = () => {
+  return (
+    <div>
+      <h2>광고 관리</h2>
+      <p>광고를 관리합니다.</p>
+    </div>
+  );
+};
+
+export default AdManager;
+=======
 // import React, { useEffect, useState } from "react";
 // import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Modal, Box, Typography } from "@mui/material"
 // import "../styles/modalStyle.css"
@@ -183,3 +195,4 @@
 // }
 
 // export default AdManager;
+>>>>>>> origin/main

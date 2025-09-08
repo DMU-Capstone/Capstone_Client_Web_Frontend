@@ -1,3 +1,15 @@
+<<<<<<< HEAD
+const GuestScreen = () => {
+  return (
+    <div>
+      <h2>게스트 화면</h2>
+      <p>게스트 정보를 입력할 수 있습니다.</p>
+    </div>
+  );
+};
+
+export default GuestScreen;
+=======
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -163,3 +175,4 @@ export default function QueueRegisterPage() {
     </Container>
   );
 }
+>>>>>>> origin/main

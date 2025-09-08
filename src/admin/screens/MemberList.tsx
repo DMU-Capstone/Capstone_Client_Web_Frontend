@@ -1,3 +1,15 @@
+<<<<<<< HEAD
+const MemberListScreen = () => {
+  return (
+    <div>
+      <h2>회원 관리</h2>
+      <p>회원 정보를 관리합니다.</p>
+    </div>
+  );
+};
+
+export default MemberListScreen;
+=======
 // import React, { Children, useEffect, useState } from "react";
 // import { deleteMember, getAllMembers} from "../services/memberService";
 // import '../styles/Admin.css';
@@ -197,3 +209,4 @@
 // };
 
 // export default MemberListScreen;
+>>>>>>> origin/main

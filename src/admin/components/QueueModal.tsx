@@ -1,7 +1,13 @@
+<<<<<<< HEAD
+import { getAllQueues } from "../services/queueService";
+import '../styles/Admin.css';
+import { Table, TableBody, TableCell, TableHead, TableRow, Paper, TableContainer, Box, Modal, Typography} from "@mui/material";
+=======
 import { getAllQueues, getActiveQueues, getQueueDetail } from "../services/queueService";
 import '../styles/Admin.css';
 import { useNavigate } from "react-router-dom";
 import { Checkbox, Table, TableBody, TableCell, TableHead, TableRow, TextField, Paper, TableContainer, Button, Box, Modal, Typography} from "@mui/material";
+>>>>>>> origin/main
 import { useEffect, useState } from "react";
 
 interface RegisterQueueModalProps {
@@ -26,9 +32,12 @@ interface Queue {
 
 const EndQueueModal: React.FC<RegisterQueueModalProps> = ({ open, onClose}) => {
     const [endedQueues, setEndedQueues] = useState<Queue[]>([]);
+<<<<<<< HEAD
+=======
     const [queue, setQueue] = useState<Queue[]>([]);  //queue 배열
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredQueue, setFilteredQueue] = useState<any[]>([]);
+>>>>>>> origin/main
 
     const fetchEndQueue = async () => {
         try {
@@ -40,12 +49,17 @@ const EndQueueModal: React.FC<RegisterQueueModalProps> = ({ open, onClose}) => {
             const ended = allQueues.filter(q => new Date(q.endTime).getTime() <= now);
         
             setEndedQueues(ended);
+<<<<<<< HEAD
+=======
             setQueue(allQueues);
+>>>>>>> origin/main
             } catch {
                 alert("대기열 불러오기 실패");
             }
     }
 
+<<<<<<< HEAD
+=======
     const handleSearch = () => {
         if (searchTerm.trim() === "") {
             setFilteredQueue(queue);
@@ -57,6 +71,7 @@ const EndQueueModal: React.FC<RegisterQueueModalProps> = ({ open, onClose}) => {
         }
     };
 
+>>>>>>> origin/main
     useEffect(() => {
         fetchEndQueue();
     }, []);
@@ -72,7 +87,10 @@ const EndQueueModal: React.FC<RegisterQueueModalProps> = ({ open, onClose}) => {
             <TableContainer component={Paper}>
             <Table>
                 <TableHead>
+<<<<<<< HEAD
+=======
                     
+>>>>>>> origin/main
                 <TableRow>
                     <TableCell>호스트명</TableCell>
                     <TableCell>대기인원</TableCell>
@@ -94,11 +112,18 @@ const EndQueueModal: React.FC<RegisterQueueModalProps> = ({ open, onClose}) => {
                 </TableBody>
             </Table>
             </TableContainer>
+<<<<<<< HEAD
+=======
 
             
+>>>>>>> origin/main
         </Box>
     </Modal>
     );
 }
 
+<<<<<<< HEAD
 export default EndQueueModal;
+=======
+export default EndQueueModal;
+>>>>>>> origin/main
