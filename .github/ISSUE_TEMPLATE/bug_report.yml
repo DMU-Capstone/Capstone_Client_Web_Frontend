@@ -1,0 +1,93 @@
+name: 🐛 버그 리포트
+description: 버그를 발견하셨나요?
+title: "[Bug] "
+assignees: [""]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        버그를 발견하셨나요? 아래 양식을 작성해주세요!
+  
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 📝 버그 내용
+      description: 어떤 버그인가요?
+      placeholder: 버그에 대해 자세히 설명해주세요
+    validations:
+      required: true
+  
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 🔄 재현 방법
+      description: 버그를 재현하는 단계를 순서대로 적어주세요
+      placeholder: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+  
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: ✅ 예상 결과
+      description: 어떻게 동작해야 하나요?
+      placeholder: 정상적으로 동작했을 때의 결과를 설명해주세요
+    validations:
+      required: true
+  
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: ❌ 실제 결과
+      description: 실제로는 어떻게 동작하나요?
+      placeholder: 실제로 발생한 결과를 설명해주세요
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: browser
+    attributes:
+      label: 💻 브라우저
+      options:
+        - Chrome
+        - Safari
+        - Firefox
+        - Edge
+        - 기타
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: os
+    attributes:
+      label: 💻 운영체제
+      options:
+        - macOS
+        - Windows
+        - Linux
+        - iOS
+        - Android
+        - 기타
+    validations:
+      required: true
+  
+  - type: input
+    id: version
+    attributes:
+      label: 📱 버전
+      description: 브라우저나 앱 버전을 알려주세요
+      placeholder: 예: Chrome 120, iOS 17.1
+    validations:
+      required: true
+  
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 스크린샷
+      description: 가능하다면 스크린샷을 첨부해주세요
+      placeholder: 스크린샷을 드래그 앤 드롭하거나 링크를 붙여넣어주세요
+    validations:
+      required: false 
