@@ -27,26 +27,15 @@ const Dashboard = () => {
   const members = [
     {
       id: 1,
-<<<<<<< HEAD
       juid: "124U97s300",
-=======
-      uuid: "D124U97s300",
->>>>>>> origin/main
       userId: "dongy***",
       name: "김*수",
       nickname: "IronWater",
       joinDate: "2025-02-31",
     },
-<<<<<<< HEAD
     ...Array.from({ length: 9 }, (_, i) => ({
       id: i + 2,
       juid: "",
-=======
-    // 나머지 9개 행은 빈 데이터
-    ...Array.from({ length: 9 }, (_, i) => ({
-      id: i + 2,
-      uuid: "",
->>>>>>> origin/main
       userId: "",
       name: "",
       nickname: "",
@@ -73,22 +62,14 @@ const Dashboard = () => {
   };
 
   const isAllSelected = selectedRows.length === members.length;
-<<<<<<< HEAD
   const isIndeterminate =
     selectedRows.length > 0 && selectedRows.length < members.length;
-=======
-  const isIndeterminate = selectedRows.length > 0 && selectedRows.length < members.length;
->>>>>>> origin/main
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar selectedMenu={selectedMenu} onSelectMenu={handleMenuSelect} />
       <div className="flex-1 ml-64">
         <Box sx={{ p: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-<<<<<<< HEAD
-=======
-          {/* 헤더 */}
->>>>>>> origin/main
           <Box sx={{ mb: 3 }}>
             <Typography
               variant="h4"
@@ -101,10 +82,6 @@ const Dashboard = () => {
             </Typography>
           </Box>
 
-<<<<<<< HEAD
-=======
-          {/* 검색 및 필터 영역 */}
->>>>>>> origin/main
           <Paper sx={{ p: 3, mb: 3 }}>
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} md={6}>
@@ -140,10 +117,6 @@ const Dashboard = () => {
               </Grid>
             </Grid>
 
-<<<<<<< HEAD
-=======
-            {/* 날짜 필터 */}
->>>>>>> origin/main
             <Grid container spacing={2} alignItems="center" sx={{ mt: 2 }}>
               <Grid item>
                 <TextField
@@ -183,12 +156,7 @@ const Dashboard = () => {
             </Grid>
           </Paper>
 
-<<<<<<< HEAD
           <Paper sx={{ overflow: "hidden" }}>
-=======
-          {/* 데이터 테이블 */}
-          <Paper sx={{ overflow: "hidden", border: "1px solid #e0e0e0" }}>
->>>>>>> origin/main
             <TableContainer>
               <Table>
                 <TableHead>
@@ -224,18 +192,11 @@ const Dashboard = () => {
                         <Checkbox
                           checked={selectedRows.includes(member.id)}
                           onChange={() => handleSelectRow(member.id)}
-<<<<<<< HEAD
                           size="small"
                         />
                       </TableCell>
                       <TableCell>{member.id}</TableCell>
                       <TableCell>{member.juid}</TableCell>
-=======
-                        />
-                      </TableCell>
-                      <TableCell>{member.id}</TableCell>
-                      <TableCell>{member.uuid}</TableCell>
->>>>>>> origin/main
                       <TableCell>{member.userId}</TableCell>
                       <TableCell>{member.name}</TableCell>
                       <TableCell>{member.nickname}</TableCell>
@@ -260,19 +221,11 @@ const Dashboard = () => {
               </Table>
             </TableContainer>
 
-<<<<<<< HEAD
-=======
-            {/* 페이지네이션 */}
->>>>>>> origin/main
             <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
               <Pagination
                 count={9}
                 page={currentPage}
-<<<<<<< HEAD
                 onChange={(_, page) => setCurrentPage(page)}
-=======
-                onChange={(event, page) => setCurrentPage(page)}
->>>>>>> origin/main
                 color="primary"
                 showFirstButton
                 showLastButton
