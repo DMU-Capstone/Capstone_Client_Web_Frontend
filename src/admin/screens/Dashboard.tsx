@@ -27,16 +27,15 @@ const Dashboard = () => {
   const members = [
     {
       id: 1,
-      uuid: "D124U97s300",
+      juid: "124U97s300",
       userId: "dongy***",
       name: "김*수",
       nickname: "IronWater",
       joinDate: "2025-02-31",
     },
-    // 나머지 9개 행은 빈 데이터
     ...Array.from({ length: 9 }, (_, i) => ({
       id: i + 2,
-      uuid: "",
+      juid: "",
       userId: "",
       name: "",
       nickname: "",
@@ -63,14 +62,14 @@ const Dashboard = () => {
   };
 
   const isAllSelected = selectedRows.length === members.length;
-  const isIndeterminate = selectedRows.length > 0 && selectedRows.length < members.length;
+  const isIndeterminate =
+    selectedRows.length > 0 && selectedRows.length < members.length;
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar selectedMenu={selectedMenu} onSelectMenu={handleMenuSelect} />
       <div className="flex-1 ml-64">
         <Box sx={{ p: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-          {/* 헤더 */}
           <Box sx={{ mb: 3 }}>
             <Typography
               variant="h4"
@@ -83,7 +82,6 @@ const Dashboard = () => {
             </Typography>
           </Box>
 
-          {/* 검색 및 필터 영역 */}
           <Paper sx={{ p: 3, mb: 3 }}>
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} md={6}>
@@ -119,7 +117,6 @@ const Dashboard = () => {
               </Grid>
             </Grid>
 
-            {/* 날짜 필터 */}
             <Grid container spacing={2} alignItems="center" sx={{ mt: 2 }}>
               <Grid item>
                 <TextField
@@ -159,8 +156,7 @@ const Dashboard = () => {
             </Grid>
           </Paper>
 
-          {/* 데이터 테이블 */}
-          <Paper sx={{ overflow: "hidden", border: "1px solid #e0e0e0" }}>
+          <Paper sx={{ overflow: "hidden" }}>
             <TableContainer>
               <Table>
                 <TableHead>
@@ -196,10 +192,11 @@ const Dashboard = () => {
                         <Checkbox
                           checked={selectedRows.includes(member.id)}
                           onChange={() => handleSelectRow(member.id)}
+                          size="small"
                         />
                       </TableCell>
                       <TableCell>{member.id}</TableCell>
-                      <TableCell>{member.uuid}</TableCell>
+                      <TableCell>{member.juid}</TableCell>
                       <TableCell>{member.userId}</TableCell>
                       <TableCell>{member.name}</TableCell>
                       <TableCell>{member.nickname}</TableCell>
@@ -224,12 +221,11 @@ const Dashboard = () => {
               </Table>
             </TableContainer>
 
-            {/* 페이지네이션 */}
             <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
               <Pagination
                 count={9}
                 page={currentPage}
-                onChange={(event, page) => setCurrentPage(page)}
+                onChange={(_, page) => setCurrentPage(page)}
                 color="primary"
                 showFirstButton
                 showLastButton
