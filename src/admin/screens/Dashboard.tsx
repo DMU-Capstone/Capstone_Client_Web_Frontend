@@ -16,13 +16,12 @@ import {
   Pagination,
 } from "@mui/material";
 import { Search, Refresh } from "@mui/icons-material";
-import Sidebar from "../components/Sidebar";
+// import Sidebar from "../components/Sidebar";
 
 const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRows, setSelectedRows] = useState<number[]>([1]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedMenu, setSelectedMenu] = useState("회원관리");
 
   const members = [
     {
@@ -57,17 +56,13 @@ const Dashboard = () => {
     );
   };
 
-  const handleMenuSelect = (menu: string) => {
-    setSelectedMenu(menu);
-  };
-
   const isAllSelected = selectedRows.length === members.length;
   const isIndeterminate =
     selectedRows.length > 0 && selectedRows.length < members.length;
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar selectedMenu={selectedMenu} onSelectMenu={handleMenuSelect} />
+      {/* <Sidebar selectedMenu={selectedMenu} onSelectMenu={handleMenuSelect} /> */}
       <div className="flex-1 ml-64">
         <Box sx={{ p: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
           <Box sx={{ mb: 3 }}>

@@ -12,7 +12,7 @@ import GuestQueue from "./user/UserScreen/GuestQueue";
 // import MemberList from "./admin/screens/MemberList";
 // import QueueList from "./admin/screens/QueueList";
 import Dashboard from "./admin/screens/Dashboard";
-import Sidebar from "./admin/components/Sidebar";
+// import Sidebar from "./admin/components/Sidebar";
 
 function App() {
   return (
@@ -24,7 +24,7 @@ function App() {
         <Route path="/guest-queue" element={<GuestQueue />} />
 
         {/* Admin Routes */}
-        <Route path="/sider" element={<Sidebar />} />
+        {/* <Route path="/sider" element={<Sidebar />} /> */}
         <Route path="/dashboard" element={<Dashboard />} />
         {/* <Route path="/admin" element={<AdminMain />} />
         <Route path="/admin/ads" element={<AdManager />} />
