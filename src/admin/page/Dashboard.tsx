@@ -116,11 +116,6 @@ const Dashboard = () => {
     { name: "Mobile Device", value: 1, color: "#F59E0B" },
   ];
 
-  const totalVisitors = deviceTypeData.reduce(
-    (sum, item) => sum + item.value,
-    0
-  );
-
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* 상단 헤더 바 */}
