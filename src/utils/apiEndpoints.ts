@@ -1,5 +1,3 @@
-// API 엔드포인트 상수 정의
-
 // 인증 관련 엔드포인트
 export const AUTH_ENDPOINTS = {
   LOGIN: "/login",
@@ -14,8 +12,8 @@ export const AUTH_ENDPOINTS = {
 // 관리자 관련 엔드포인트
 export const ADMIN_ENDPOINTS = {
   DASHBOARD: "/admin/dashboard",
-  MEMBERS: "/admin/members",
-  MEMBER_DETAIL: (id: string) => `/admin/members/${id}`,
+  MEMBERS: "/admin/users",
+  MEMBER_DETAIL: (id: string) => `/admin/users/${id}`,
   QUEUE_LIST: "/admin/queue",
   QUEUE_DETAIL: (id: string) => `/admin/queue/${id}`,
   ADS: "/admin/ads",

@@ -9,16 +9,11 @@ interface LoginRequest {
   username: string;
   password: string;
 }
-
-// 로그인 응답 타입 정의
 interface LoginResponse {
-  accessToken: string;
-  refreshToken?: string;
-  user: {
-    id: string;
-    username: string;
-    role: string;
-  };
+  message: string;
+  username: string;
+  name: string;
+  role: string;
 }
 
 const Login = () => {
@@ -44,18 +39,62 @@ const Login = () => {
     setError("");
 
     try {
-      // 로그인 API 호출
+      // 로그인 API 호출 (헤더 포함)
       const response = await apiPost<LoginResponse>(
         AUTH_ENDPOINTS.LOGIN,
-        formData as LoginRequest
+        formData as LoginRequest,
+        {
+          headers: {
+            "X-Client-Type": "web",
+          },
+        }
       );
 
-      if (response.success && response.data) {
-        // 토큰 저장
-        tokenUtils.setToken(response.data.accessToken);
+      console.log("로그인 API 응답:", response);
+      console.log("응답 헤더:", response.headers);
 
-        // 사용자 정보 저장 (선택사항)
-        sessionStorage.setItem("user", JSON.stringify(response.data.user));
+      if (response.success && response.data) {
+        const authHeader =
+          response.headers?.get("authorization") ||
+          response.headers?.get("Authorization");
+
+        console.log("Authorization 헤더:", authHeader);
+
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+          // Bearer 토큰에서 실제 JWT 토큰 추출
+          const token = authHeader.substring(7); // "Bearer " 제거
+
+          // 토큰 저장
+          tokenUtils.setToken(token);
+          sessionStorage.setItem("accessToken", token);
+
+          console.log("JWT 토큰 저장 완료:", token);
+          console.log(
+            "Session Storage 확인:",
+            sessionStorage.getItem("accessToken")
+          );
+        } else {
+          console.warn("Authorization 헤더에서 토큰을 찾을 수 없습니다.");
+          console.log("모든 헤더:", response.headers);
+
+          // 헤더를 객체로 변환해서 확인
+          const headersObj: Record<string, string> = {};
+          response.headers?.forEach((value, key) => {
+            headersObj[key] = value;
+          });
+          console.log("헤더 객체:", headersObj);
+        }
+
+        // 사용자 정보 저장
+        const userInfo = {
+          id: response.data.username,
+          name: response.data.name,
+          username: response.data.username,
+          role: response.data.role,
+        };
+
+        sessionStorage.setItem("user", JSON.stringify(userInfo));
+        console.log("사용자 정보 저장 완료:", userInfo);
 
         console.log("로그인 성공:", response.data);
 
@@ -68,6 +107,7 @@ const Login = () => {
       const errorMessage = errorUtils.getErrorMessage(err);
       setError(errorMessage);
       errorUtils.logError(err, "Login");
+      console.error("로그인 에러:", err);
     } finally {
       setIsLoading(false);
     }

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface SidebarProps {
   selectedMenu: string;
@@ -11,6 +12,7 @@ interface SubMenuItem {
   id: string;
   label: string;
   description: string;
+  route?: string;
 }
 
 interface MenuItem {
@@ -19,15 +21,18 @@ interface MenuItem {
   icon: React.ReactNode;
   description: string;
   subMenus?: SubMenuItem[];
+  route?: string;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
   const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const menuItems: MenuItem[] = [
     {
       id: "대시보드",
       label: "대시보드",
+      route: "/admin/dashboard",
       icon: (
         <svg
           className="w-5 h-5"
@@ -75,13 +80,20 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
           id: "자영업자 회원",
           label: "자영업자 회원",
           description: "전체 회원 조회",
+          route: "/admin/members/business",
         },
         {
           id: "사용자 회원",
           label: "사용자 회원",
           description: "신규 회원 추가",
+          route: "/admin/members",
         },
-        { id: "회원통계", label: "회원통계", description: "회원 현황 분석" },
+        {
+          id: "회원통계",
+          label: "회원통계",
+          description: "회원 현황 분석",
+          route: "/admin/members/statistics",
+        },
       ],
     },
     {
@@ -108,16 +120,19 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
           id: "실시간대기열",
           label: "실시간대기열",
           description: "현재 대기 현황",
+          route: "/admin/queue/realtime",
         },
         {
           id: "대기열이력",
           label: "대기열이력",
           description: "과거 대기 기록",
+          route: "/admin/queue/history",
         },
         {
           id: "대기열설정",
           label: "대기열설정",
           description: "대기열 관리 설정",
+          route: "/admin/queue/settings",
         },
       ],
     },
@@ -141,13 +156,24 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
       ),
       description: "배너 및 이벤트 관리",
       subMenus: [
-        { id: "배너관리", label: "배너관리", description: "메인 배너 관리" },
+        {
+          id: "배너관리",
+          label: "배너관리",
+          description: "메인 배너 관리",
+          route: "/admin/mainbanner",
+        },
         {
           id: "이벤트관리",
           label: "이벤트관리",
           description: "이벤트 등록/수정",
+          route: "/admin/notices",
         },
-        { id: "광고관리", label: "광고관리", description: "광고 콘텐츠 관리" },
+        {
+          id: "광고관리",
+          label: "광고관리",
+          description: "광고 콘텐츠 관리",
+          route: "/admin/ads",
+        },
       ],
     },
     {
@@ -174,9 +200,20 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
           id: "대시보드",
           label: "대시보드",
           description: "전체 현황 모니터링",
+          route: "/admin/monitoring/dashboard",
         },
-        { id: "알림관리", label: "알림관리", description: "시스템 알림 설정" },
-        { id: "로그조회", label: "로그조회", description: "시스템 로그 확인" },
+        {
+          id: "알림관리",
+          label: "알림관리",
+          description: "시스템 알림 설정",
+          route: "/admin/monitoring/notifications",
+        },
+        {
+          id: "로그조회",
+          label: "로그조회",
+          description: "시스템 로그 확인",
+          route: "/admin/monitoring/logs",
+        },
       ],
     },
     {
@@ -209,27 +246,41 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
           id: "시스템설정",
           label: "시스템설정",
           description: "기본 시스템 설정",
+          route: "/admin/settings/system",
         },
         {
           id: "사용자권한",
           label: "사용자권한",
           description: "관리자 권한 관리",
+          route: "/admin/settings/permissions",
         },
-        { id: "백업복원", label: "백업복원", description: "데이터 백업/복원" },
+        {
+          id: "백업복원",
+          label: "백업복원",
+          description: "데이터 백업/복원",
+          route: "/admin/settings/backup",
+        },
       ],
     },
   ];
 
+  const handleMenuClick = (menuId: string, route?: string) => {
+    onSelectMenu(menuId);
+
+    if (route) {
+      navigate(route);
+    }
+  };
+
   return (
     <div
       className={`
-        fixed top-0 left-0 h-full w-72 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out
-       
+        fixed top-0 left-0  w-72 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out
         lg:translate-x-0 lg:static lg:shadow-none lg:border-r lg:border-gray-200 h-screen
       `}
     >
       {/* 헤더 */}
-      <div className="bg-blue-600 text-white p-6">
+      <div className="bg-blue-600 p-6">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -240,9 +291,9 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
               />
             </svg>
           </div>
-          <div>
+          <div className="text-white">
             <h1 className="text-lg font-bold">관리자 패널</h1>
-            <p className="text-blue-100 text-sm">Admin Dashboard</p>
+            <p className=" text-sm">Admin Dashboard</p>
           </div>
         </div>
       </div>
@@ -257,7 +308,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
                 onMouseLeave={() => setHoveredMenu(null)}
               >
                 <button
-                  onClick={() => onSelectMenu(item.id)}
+                  onClick={() => handleMenuClick(item.id, item.route)}
                   className={`
                       w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors duration-200
                       ${
@@ -331,7 +382,9 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
                     {item.subMenus.map((subMenu) => (
                       <li key={subMenu.id}>
                         <button
-                          onClick={() => onSelectMenu(subMenu.id)}
+                          onClick={() =>
+                            handleMenuClick(subMenu.id, subMenu.route)
+                          }
                           className="w-full flex items-center px-8 py-2 text-left hover:bg-gray-50 transition-colors duration-200 rounded-lg"
                         >
                           <div className="flex-1 min-w-0">
