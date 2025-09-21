@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 
-// 공지사항 타입 정의 (API 연동 시 사용)
+// 공지사항 타입 정의
 interface Notice {
   id: number;
   title: string;
@@ -12,15 +12,6 @@ interface Notice {
   viewCount: number;
   createdAt: string;
   updatedAt: string;
-}
-
-// 공지사항 목록 응답 타입
-interface NoticeListResponse {
-  content: Notice[];
-  page: number;
-  size: number;
-  totalPages: number;
-  totalElements: number;
 }
 
 const NoticeList = () => {
@@ -52,8 +43,8 @@ const NoticeList = () => {
     isActive: true,
   });
 
-  // 임시 데이터 (API 연동 전까지 사용)
-  const mockNotices: Notice[] = [
+  // 샘플 데이터
+  const sampleNotices: Notice[] = [
     {
       id: 1,
       title: "시스템 점검 안내",
@@ -89,90 +80,129 @@ const NoticeList = () => {
       createdAt: "2024-01-05T11:20:00Z",
       updatedAt: "2024-01-05T11:20:00Z",
     },
+    {
+      id: 4,
+      title: "서비스 이용 시간 변경",
+      content:
+        "매장 운영 시간이 변경되었습니다. 자세한 내용은 각 매장별로 확인해주세요.",
+      author: "관리자",
+      isImportant: false,
+      isActive: true,
+      viewCount: 432,
+      createdAt: "2024-01-03T16:45:00Z",
+      updatedAt: "2024-01-03T16:45:00Z",
+    },
+    {
+      id: 5,
+      title: "결제 시스템 업데이트",
+      content: "더욱 안전하고 편리한 결제 시스템으로 업데이트되었습니다.",
+      author: "관리자",
+      isImportant: true,
+      isActive: true,
+      viewCount: 789,
+      createdAt: "2024-01-01T10:00:00Z",
+      updatedAt: "2024-01-01T10:00:00Z",
+    },
   ];
 
-  // 공지사항 목록 조회 (임시)
-  const fetchNotices = async () => {
+  // 데이터 로드 시뮬레이션
+  const loadNotices = () => {
     setLoading(true);
-    try {
-      // API 연동 시 실제 API 호출로 대체
-      // const response = await apiGet(`/admin/notices?page=${currentPage}&size=10`);
-      // setNotices(response.data.content);
-      // setTotalPages(response.data.totalPages);
-
-      // 임시 데이터 사용
-      setTimeout(() => {
-        setNotices(mockNotices);
-        setTotalPages(1);
-        setLoading(false);
-      }, 500);
-    } catch (err) {
-      setError("공지사항을 불러오는데 실패했습니다.");
+    setTimeout(() => {
+      setNotices(sampleNotices);
+      setTotalPages(Math.ceil(sampleNotices.length / 10));
       setLoading(false);
-    }
+    }, 500);
   };
 
-  // 공지사항 생성
-  const handleCreateNotice = async () => {
-    try {
-      // API 연동 시 실제 API 호출로 대체
-      // await apiPost("/admin/notices", formData);
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    loadNotices();
+  }, []);
 
-      console.log("공지사항 생성:", formData);
-      setShowCreateModal(false);
-      setFormData({
-        title: "",
-        content: "",
-        isImportant: false,
-        isActive: true,
-      });
-      fetchNotices();
-    } catch (err) {
-      setError("공지사항 생성에 실패했습니다.");
+  // 공지사항 생성
+  const handleCreateNotice = () => {
+    if (!formData.title.trim() || !formData.content.trim()) {
+      setError("제목과 내용을 모두 입력해주세요.");
+      return;
     }
+
+    const newNotice: Notice = {
+      id: Math.max(...notices.map((n) => n.id)) + 1,
+      title: formData.title,
+      content: formData.content,
+      author: "관리자",
+      isImportant: formData.isImportant,
+      isActive: formData.isActive,
+      viewCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setNotices([newNotice, ...notices]);
+    setFormData({ title: "", content: "", isImportant: false, isActive: true });
+    setShowCreateModal(false);
+    setError("");
   };
 
   // 공지사항 수정
-  const handleEditNotice = async () => {
-    if (!selectedNotice) return;
-
-    try {
-      // API 연동 시 실제 API 호출로 대체
-      // await apiPut(`/admin/notices/${selectedNotice.id}`, formData);
-
-      console.log("공지사항 수정:", selectedNotice.id, formData);
-      setShowEditModal(false);
-      setSelectedNotice(null);
-      setFormData({
-        title: "",
-        content: "",
-        isImportant: false,
-        isActive: true,
-      });
-      fetchNotices();
-    } catch (err) {
-      setError("공지사항 수정에 실패했습니다.");
+  const handleEditNotice = () => {
+    if (!selectedNotice || !formData.title.trim() || !formData.content.trim()) {
+      setError("제목과 내용을 모두 입력해주세요.");
+      return;
     }
+
+    const updatedNotices = notices.map((notice) =>
+      notice.id === selectedNotice.id
+        ? {
+            ...notice,
+            title: formData.title,
+            content: formData.content,
+            isImportant: formData.isImportant,
+            isActive: formData.isActive,
+            updatedAt: new Date().toISOString(),
+          }
+        : notice
+    );
+
+    setNotices(updatedNotices);
+    setShowEditModal(false);
+    setSelectedNotice(null);
+    setFormData({ title: "", content: "", isImportant: false, isActive: true });
+    setError("");
   };
 
   // 공지사항 삭제
-  const handleDeleteNotice = async () => {
+  const handleDeleteNotice = () => {
     if (!selectedNotice) return;
 
-    try {
-      // API 연동 시 실제 API 호출로 대체
-      // await apiDelete(`/admin/notices/${selectedNotice.id}`);
-
-      console.log("공지사항 삭제:", selectedNotice.id);
-      setShowDeleteModal(false);
-      setSelectedNotice(null);
-      fetchNotices();
-    } catch (err) {
-      setError("공지사항 삭제에 실패했습니다.");
-    }
+    const updatedNotices = notices.filter(
+      (notice) => notice.id !== selectedNotice.id
+    );
+    setNotices(updatedNotices);
+    setShowDeleteModal(false);
+    setSelectedNotice(null);
+    setError("");
   };
 
-  // 필터링된 공지사항 목록
+  // 수정 모달 열기
+  const openEditModal = (notice: Notice) => {
+    setSelectedNotice(notice);
+    setFormData({
+      title: notice.title,
+      content: notice.content,
+      isImportant: notice.isImportant,
+      isActive: notice.isActive,
+    });
+    setShowEditModal(true);
+  };
+
+  // 삭제 모달 열기
+  const openDeleteModal = (notice: Notice) => {
+    setSelectedNotice(notice);
+    setShowDeleteModal(true);
+  };
+
   const filteredNotices = notices.filter((notice) => {
     const matchesSearch =
       notice.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -187,28 +217,6 @@ const NoticeList = () => {
       (importanceFilter === "NORMAL" && !notice.isImportant);
 
     return matchesSearch && matchesStatus && matchesImportance;
-  });
-
-  // 모달 열기
-  const openEditModal = (notice: Notice) => {
-    setSelectedNotice(notice);
-    setFormData({
-      title: notice.title,
-      content: notice.content,
-      isImportant: notice.isImportant,
-      isActive: notice.isActive,
-    });
-    setShowEditModal(true);
-  };
-
-  const openDeleteModal = (notice: Notice) => {
-    setSelectedNotice(notice);
-    setShowDeleteModal(true);
-  };
-
-  // 초기 데이터 로드
-  useState(() => {
-    fetchNotices();
   });
 
   return (
@@ -262,7 +270,11 @@ const NoticeList = () => {
               {/* 상태 필터 */}
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
+                onChange={(e) =>
+                  setStatusFilter(
+                    e.target.value as "ALL" | "ACTIVE" | "INACTIVE"
+                  )
+                }
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="ALL">전체 상태</option>
@@ -273,7 +285,11 @@ const NoticeList = () => {
               {/* 중요도 필터 */}
               <select
                 value={importanceFilter}
-                onChange={(e) => setImportanceFilter(e.target.value as any)}
+                onChange={(e) =>
+                  setImportanceFilter(
+                    e.target.value as "ALL" | "IMPORTANT" | "NORMAL"
+                  )
+                }
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="ALL">전체 중요도</option>
@@ -282,10 +298,9 @@ const NoticeList = () => {
               </select>
             </div>
 
-            {/* 액션 버튼들 */}
             <div className="flex gap-2">
               <button
-                onClick={fetchNotices}
+                onClick={loadNotices}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
               >
                 <svg
@@ -372,7 +387,11 @@ const NoticeList = () => {
                 공지사항이 없습니다
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                새로운 공지사항을 작성해보세요.
+                {searchTerm ||
+                statusFilter !== "ALL" ||
+                importanceFilter !== "ALL"
+                  ? "검색 조건에 맞는 공지사항이 없습니다."
+                  : "새로운 공지사항을 작성해보세요."}
               </p>
             </div>
           ) : (
@@ -386,7 +405,8 @@ const NoticeList = () => {
                   <div className="col-span-1">상태</div>
                   <div className="col-span-1">중요도</div>
                   <div className="col-span-1">조회수</div>
-                  <div className="col-span-2">작성일</div>
+                  <div className="col-span-1">작성일</div>
+                  <div className="col-span-1">관리</div>
                 </div>
               </div>
 
@@ -463,10 +483,28 @@ const NoticeList = () => {
                       </div>
 
                       {/* 작성일 */}
-                      <div className="col-span-2">
+                      <div className="col-span-1">
                         <span className="text-sm text-gray-500">
                           {new Date(notice.createdAt).toLocaleDateString()}
                         </span>
+                      </div>
+
+                      {/* 관리 버튼 */}
+                      <div className="col-span-1">
+                        <div className="flex space-x-1">
+                          <button
+                            onClick={() => openEditModal(notice)}
+                            className="text-blue-600 hover:text-blue-900 text-xs"
+                          >
+                            수정
+                          </button>
+                          <button
+                            onClick={() => openDeleteModal(notice)}
+                            className="text-red-600 hover:text-red-900 text-xs"
+                          >
+                            삭제
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -584,7 +622,16 @@ const NoticeList = () => {
 
             <div className="flex justify-end gap-2 mt-6">
               <button
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setFormData({
+                    title: "",
+                    content: "",
+                    isImportant: false,
+                    isActive: true,
+                  });
+                  setError("");
+                }}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
               >
                 취소
@@ -669,7 +716,17 @@ const NoticeList = () => {
 
             <div className="flex justify-end gap-2 mt-6">
               <button
-                onClick={() => setShowEditModal(false)}
+                onClick={() => {
+                  setShowEditModal(false);
+                  setSelectedNotice(null);
+                  setFormData({
+                    title: "",
+                    content: "",
+                    isImportant: false,
+                    isActive: true,
+                  });
+                  setError("");
+                }}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
               >
                 취소
@@ -685,7 +742,7 @@ const NoticeList = () => {
         </div>
       )}
 
-      {/* 공지사항 삭제 확인 모달 */}
+      {/* 공지사항 삭제 모달 */}
       {showDeleteModal && selectedNotice && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -699,7 +756,10 @@ const NoticeList = () => {
 
             <div className="flex justify-end gap-2">
               <button
-                onClick={() => setShowDeleteModal(false)}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setSelectedNotice(null);
+                }}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
               >
                 취소
