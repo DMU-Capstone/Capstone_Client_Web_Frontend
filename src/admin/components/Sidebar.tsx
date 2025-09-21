@@ -97,6 +97,52 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
       ],
     },
     {
+      id: "매장관리",
+      label: "매장관리",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          />
+        </svg>
+      ),
+      description: "매장 정보 관리",
+      subMenus: [
+        {
+          id: "매장목록",
+          label: "매장목록",
+          description: "전체 매장 조회",
+          route: "/admin/stores/list",
+        },
+        {
+          id: "매장등록",
+          label: "매장등록",
+          description: "신규 매장 등록",
+          route: "/admin/stores/register",
+        },
+        {
+          id: "매장승인",
+          label: "매장승인",
+          description: "매장 승인 관리",
+          route: "/admin/stores/approval",
+        },
+        {
+          id: "매장통계",
+          label: "매장통계",
+          description: "매장 현황 분석",
+          route: "/admin/stores/statistics",
+        },
+      ],
+    },
+    {
       id: "대기열내역",
       label: "대기열내역",
       icon: (

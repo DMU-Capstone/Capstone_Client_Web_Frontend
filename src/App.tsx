@@ -12,6 +12,7 @@ import Login from "./user/page/Login";
 import MemberList from "./admin/page/MemberList";
 import MainBanner from "./admin/page/MainBanner";
 import NoticeList from "./admin/page/NoticeList";
+import StoreList from "./admin/page/StoreList";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/admin/members" element={<MemberList />} />
         <Route path="/admin/mainbanner" element={<MainBanner />} />
         <Route path="/admin/notices" element={<NoticeList />} />
+        <Route path="/admin/stores/list" element={<StoreList />} />
       </Routes>
     </Router>
   );
