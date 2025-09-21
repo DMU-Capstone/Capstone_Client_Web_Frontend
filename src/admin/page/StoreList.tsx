@@ -21,9 +21,7 @@ const StoreList = () => {
   const [selectedMenu, setSelectedMenu] = useState("매장목록");
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [pageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
@@ -188,7 +186,6 @@ const StoreList = () => {
     setTimeout(() => {
       setStores(sampleStores);
       setTotalCount(sampleStores.length);
-      setTotalPages(Math.ceil(sampleStores.length / pageSize));
       setLoading(false);
     }, 1000);
   };
@@ -396,12 +393,6 @@ const StoreList = () => {
               </div>
             </div>
           </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <p className="text-red-600">{error}</p>
-            </div>
-          )}
 
           <div className="bg-white rounded-lg shadow overflow-hidden">
             {loading ? (
