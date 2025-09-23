@@ -5,10 +5,9 @@ import { peakData } from "../data/mock";
 
 export const PeakPage: React.FC = () => (
     <div className="space-y-6">
-        <section className="rounded-2xl bg-slate-800/60 p-4">
+        <section className="rounded-2xl bg-[#41474D] p-4">
             <div className="flex items-center justify-between mb-2">
-                <h3 className="text-slate-200 font-semibold">피크분석</h3>
-                <div className="text-xs text-slate-400">토글 온/오프 · 호버 툴팁</div>
+                
             </div>
             <BarLineCombo data={peakData} />
         </section>

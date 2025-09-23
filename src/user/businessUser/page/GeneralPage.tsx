@@ -5,11 +5,8 @@ import { generalData, generalSeries } from "../data/mock";
 
 export const GeneralPage: React.FC = () => (
     <div className="space-y-6">
-        <section className="rounded-2xl bg-slate-800/60 p-4">
-            <div className="flex items-center justify-between mb-2">
-                <h3 className="text-slate-200 font-semibold">일반 지표</h3>
-                <div className="text-xs text-slate-400">토글 온/오프 · 호버 툴팁</div>
-            </div>
+        <section className="rounded-2xl bg-[#41474D] p-4">
+            
             <LineChart data={generalData} series={[...generalSeries]} />
         </section>
         <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
