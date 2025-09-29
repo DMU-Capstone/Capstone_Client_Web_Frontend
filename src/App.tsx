@@ -6,6 +6,9 @@ import GuestScreen from "./user/UserScreen/GuestScreen";
 import GuestQueue from "./user/UserScreen/GuestQueue";
 import Main from "./user/page/Main";
 
+// Business Chart Components
+import BusinessDashboard from "./user/businessUser/page/BusinessDashboard";
+
 // Admin Components
 import Dashboard from "./admin/page/Dashboard";
 import Login from "./user/page/Login";
@@ -13,6 +16,8 @@ import MemberList from "./admin/page/MemberList";
 import MainBanner from "./admin/page/MainBanner";
 import NoticeList from "./admin/page/NoticeList";
 import StoreList from "./admin/page/StoreList";
+
+
 
 function App() {
   return (
@@ -23,6 +28,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/guest-register" element={<GuestScreen />} />
         <Route path="/guest-queue" element={<GuestQueue />} />
+
+        {/* Business Routes */}
+        <Route path="/chart" element={<BusinessDashboard />} />
 
         {/* Admin Routes */}
         <Route path="/admin/dashboard" element={<Dashboard />} />
