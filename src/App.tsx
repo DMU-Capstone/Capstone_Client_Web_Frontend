@@ -16,7 +16,7 @@ import MemberList from "./admin/page/MemberList";
 import MainBanner from "./admin/page/MainBanner";
 import NoticeList from "./admin/page/NoticeList";
 import StoreList from "./admin/page/StoreList";
-
+import Landing from "./user/businessUser/page/LandingPage";
 
 
 function App() {
@@ -31,6 +31,8 @@ function App() {
 
         {/* Business Routes */}
         <Route path="/chart" element={<BusinessDashboard />} />
+        <Route path="/landing" element={<Landing />} />
+        <Route path="/login" element={<div>로그인 페이지 연결</div>} />
 
         {/* Admin Routes */}
         <Route path="/admin/dashboard" element={<Dashboard />} />
