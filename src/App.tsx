@@ -2,12 +2,13 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 
 // User Components
-import GuestScreen from "./user/UserScreen/GuestScreen";
+import GuestScreen from "./user/UserScreen/GuestQueue";
 import GuestQueue from "./user/UserScreen/GuestQueue";
 import Main from "./user/page/Main";
 
 // Business Chart Components
 import BusinessDashboard from "./user/businessUser/page/BusinessDashboard";
+import QueueCreate from "./user/businessUser/page/QueueCreatePage";
 
 // Admin Components
 import Dashboard from "./admin/page/Dashboard";
@@ -17,22 +18,22 @@ import MainBanner from "./admin/page/MainBanner";
 import NoticeList from "./admin/page/NoticeList";
 import StoreList from "./admin/page/StoreList";
 import Landing from "./user/businessUser/page/LandingPage";
-
+import GuestQPage from "./user/UserScreen/GuestScreen";
 
 function App() {
   return (
     <Router>
       <Routes>
         {/* User Routes */}
-        <Route path="/" element={<Main />} />
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/guest-register" element={<GuestScreen />} />
-        <Route path="/guest-queue" element={<GuestQueue />} />
+        <Route path="/guest-queue" element={<GuestScreen />} />
+        <Route path="/guest-register" element={<GuestQPage />} />
 
         {/* Business Routes */}
         <Route path="/chart" element={<BusinessDashboard />} />
-        <Route path="/landing" element={<Landing />} />
         <Route path="/login" element={<div>로그인 페이지 연결</div>} />
+        <Route path="/queue-create" element={<QueueCreate />} />
 
         {/* Admin Routes */}
         <Route path="/admin/dashboard" element={<Dashboard />} />

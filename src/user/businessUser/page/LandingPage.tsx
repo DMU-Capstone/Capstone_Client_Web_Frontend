@@ -69,7 +69,7 @@ const Landing: React.FC = () => {
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="5 -1 24 24"   // ← 여백 포함한 넉넉한 viewBox
-                            className="w-12 h-12 text-gray-400"  // ← 살짝 줄여서 안정적
+                            className="w-12 h-12 text-gray-400"
                             fill="currentColor"
                             aria-hidden
                         >
