@@ -62,25 +62,6 @@ function App() {
   ]);
 
   return <RouterProvider router={router} />;
-  // <Router>
-  //   <Routes>
-  //     {/* User Routes */}
-  //     <Route path="/" element={<Main />} />
-  //     <Route path="/login" element={<Login />} />
-  //     <Route path="/guest-register" element={<GuestScreen />} />
-  //     <Route path="/guest-queue" element={<GuestQueue />} />
-
-  //     {/* Business Routes */}
-  //     <Route path="/chart" element={<BusinessDashboard />} />
-
-  //     {/* Admin Routes */}
-  //     <Route path="/admin/dashboard" element={<Dashboard />} />
-  //     <Route path="/admin/members" element={<MemberList />} />
-  //     <Route path="/admin/mainbanner" element={<MainBanner />} />
-  //     <Route path="/admin/notices" element={<NoticeList />} />
-  //     <Route path="/admin/stores/list" element={<StoreList />} />
-  //   </Routes>
-  // </Router>
 }
 
 export default App;
