@@ -7,6 +7,7 @@ export interface ApiResponse<T = any> {
   data?: T;
   message?: string;
   error?: string;
+  headers?: Headers; // 헤더 추가
 }
 
 // API 에러 타입 정의
@@ -79,6 +80,7 @@ export const apiRequest = async <T = any>(
     return {
       success: true,
       data,
+      headers: response.headers, // 헤더 추가
     };
   } catch (error) {
     clearTimeout(timeoutId);

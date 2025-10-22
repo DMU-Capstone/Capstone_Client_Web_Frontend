@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
 import {
   BarChart,
   Bar,
@@ -119,41 +120,7 @@ const Dashboard = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* 상단 헤더 바 */}
-      <div className="fixed top-0 left-0 right-0 h-16 bg-white text-white z-50 flex items-center justify-between px-6">
-        <h1 className="text-xl font-bold">줄서기 어플 관리자 페이지</h1>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <input
-              type="text"
-              placeholder="검색..."
-              className="px-3 py-1 bg-gray-200 text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-            />
-          </div>
-          <div className="flex items-center space-x-4 text-sm">
-            <a href="#" className="hover:text-blue-200 transition-colors">
-              서비스 운행 가이드
-            </a>
-            <a href="#" className="hover:text-blue-200 transition-colors">
-              현지팩에 문의
-            </a>
-            <a href="#" className="hover:text-blue-200 transition-colors">
-              현지팩 문의목록
-            </a>
-            <a href="#" className="hover:text-blue-200 transition-colors">
-              사이트 바로가기
-            </a>
-          </div>
-          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-        </div>
-      </div>
+      <Header />
 
       {/* 사이드바 */}
       <div className="fixed top-16 left-0 h-full w-72 bg-white shadow-lg z-40">
@@ -175,28 +142,25 @@ const Dashboard = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
                 연결계정 목록 현황
               </h3>
+
               <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
+                <table className="min-w-full text-sm ">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-2 font-medium text-gray-700">
+                      <th className=" py-2 font-medium text-gray-700">
                         아이디
                       </th>
-                      <th className="text-left py-2 font-medium text-gray-700">
-                        이름
-                      </th>
-                      <th className="text-left py-2 font-medium text-gray-700">
+                      <th className=" py-2 font-medium text-gray-700">이름</th>
+                      <th className=" py-2 font-medium text-gray-700">
                         휴대폰
                       </th>
-                      <th className="text-left py-2 font-medium text-gray-700">
+                      <th className=" py-2 font-medium text-gray-700">
                         가입일
                       </th>
-                      <th className="text-left py-2 font-medium text-gray-700">
+                      <th className=" py-2 font-medium text-gray-700">
                         최종접속
                       </th>
-                      <th className="text-left py-2 font-medium text-gray-700">
-                        권한
-                      </th>
+                      <th className=" py-2 font-medium text-gray-700">권한</th>
                     </tr>
                   </thead>
                   <tbody>
