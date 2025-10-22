@@ -1,6 +1,14 @@
 // API 기본 설정
 export const API_BASE_URL = "http://134.185.99.89:8080";
 
+// api respones 타입
+
+export type ResponseDto = {
+  page: 0;
+  size: 0;
+  totalPages: 0;
+  totalElements: 0;
+};
 // API 응답 타입 정의
 export interface ApiResponse<T = any> {
   success: boolean;
