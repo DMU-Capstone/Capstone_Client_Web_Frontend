@@ -88,6 +88,10 @@ export const SETTINGS_ENDPOINTS = {
   PRIVACY: "/settings/privacy",
 } as const;
 
+
+export const BIZ_ENDPOINTS = {
+  DASHBOARD_ALL: "/api/v2/dashboard/all",
+} as const;
 export const HOST_ENDPOINTS = {
   CREATE: "/host",
 } as const;
@@ -104,6 +108,7 @@ export const API_ENDPOINTS = {
   STATISTICS: STATISTICS_ENDPOINTS,
   SETTINGS: SETTINGS_ENDPOINTS,
   HOST: HOST_ENDPOINTS,
+  BIZ: BIZ_ENDPOINTS,
 } as const;
 
 // 엔드포인트 타입 정의

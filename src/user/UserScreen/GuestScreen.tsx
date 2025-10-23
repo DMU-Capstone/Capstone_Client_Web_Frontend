@@ -4,48 +4,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import GuestService, { getQueueDetail } from "../services/GuestService";
 import { useNavigate } from "react-router-dom";
-import { filesToBase64 } from "../../utils/types/host.types";
-import { createHost } from "../../utils/services/host.services";
-
-interface HostFormValues {
-	hostName: string;
-	maxPeople: number | string;   // 문자열로 들어올 수도 있음
-	ownerName: string;
-	phone: string;
-	lat: number;
-	lng: number;
-	keywords: string[];           // select/tag 입력
-	about: string;
-	openTime?: string;            // "HH:mm" | undefined
-	closeTime?: string;           // "HH:mm" | undefined
-	photos?: File[];              // 파일 업로드
-}
-
-const toIso = (t: string | undefined, fallback: string): string => {
-  const today = new Date().toISOString().slice(0, 10);
-  const time = t && t.trim().length > 0 ? t : fallback; // "HH:mm"
-  return new Date(`${today}T${time}:00`).toISOString();
-};
-
-async function handleCreateHostSubmit(values: HostFormValues): Promise<void> {
-  const payload = {
-    request: {
-      hostName: values.hostName,
-      maxPeople: Number(values.maxPeople),
-      hostManagerName: values.ownerName,
-      hostPhoneNumber: values.phone,
-      latitude: values.lat,
-      longitude: values.lng,
-      keyword: values.keywords.join(","), // 서버 정책
-      description: values.about,
-      startTime: toIso(values.openTime, "09:00"),
-      endTime: toIso(values.closeTime, "18:00"),
-    },
-    hostImages: await filesToBase64(values.photos ?? []),
-  };
-
-  await createHost(payload);
-}
 
 interface ActiveQueue {
   id: number;
@@ -73,11 +31,8 @@ const schema = yup.object().shape({
 });
 
 export default function GuestQPage() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>({ resolver: yupResolver(schema) });
+  const { register, handleSubmit, formState: { errors } } =
+    useForm<FormData>({ resolver: yupResolver(schema) });
 
   const navigate = useNavigate();
 
@@ -101,11 +56,8 @@ export default function GuestQPage() {
         }
 
         setActiveHosts(result);
-        if (result.length > 0) setActiveHostId(result[0].id);
-        else {
-          setActiveHostId(null);
-          alert("현재 활성화된 대기열이 없습니다.");
-        }
+        setActiveHostId(result[0]?.id ?? null);
+        if (result.length === 0) alert("현재 활성화된 대기열이 없습니다.");
       } catch (err) {
         console.error("활성 큐 목록 불러오기 실패", err);
       }
@@ -134,8 +86,8 @@ export default function GuestQPage() {
         (sum: number, item: { count: number }) => sum + item.count,
         0
       );
-      setActiveHosts((prev) =>
-        prev.map((q) => (q.id === activeHostId ? { ...q, count: updatedCount } : q))
+      setActiveHosts(prev =>
+        prev.map(q => (q.id === activeHostId ? { ...q, count: updatedCount } : q))
       );
     } catch (err) {
       console.log("대기열 등록 실패:", err);
@@ -145,9 +97,7 @@ export default function GuestQPage() {
 
   return (
     <div className="min-h-dvh bg-white flex justify-center">
-      {/* 모바일 캔버스 */}
       <div className="w-full max-w-[480px] px-4 py-4">
-        {/* 상단: 뒤로가기 */}
         <div className="h-10 flex items-center">
           <button
             type="button"
@@ -161,15 +111,12 @@ export default function GuestQPage() {
           </button>
         </div>
 
-        {/* 타이틀 */}
         <h1 className="mt-2 text-[22px] leading-7 font-extrabold">
           대기열에 등록하기 위한
           <br /> 정보를 입력해주세요.
         </h1>
 
-        {/* 폼 */}
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-5">
-          {/* 참여할 대기열 선택 */}
           <div>
             <label className="text-sm font-semibold">참여할 대기열 선택</label>
             <select
@@ -192,7 +139,6 @@ export default function GuestQPage() {
             </select>
           </div>
 
-          {/* 휴대폰 번호 */}
           <div>
             <label className="text-sm font-semibold">휴대폰 번호</label>
             <input
@@ -207,7 +153,6 @@ export default function GuestQPage() {
             )}
           </div>
 
-          {/* 대표자 이름 */}
           <div>
             <label className="text-sm font-semibold">대표자 이름</label>
             <input
@@ -222,7 +167,6 @@ export default function GuestQPage() {
             )}
           </div>
 
-          {/* 인원수 */}
           <div>
             <label className="text-sm font-semibold">인원수</label>
             <input
@@ -237,7 +181,6 @@ export default function GuestQPage() {
             )}
           </div>
 
-          {/* 확인 버튼 */}
           <button
             type="submit"
             disabled={!activeHostId || activeHosts.length === 0}
