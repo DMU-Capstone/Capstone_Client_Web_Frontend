@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import Sidebar from "../components/Sidebar";
-import { errorUtils, tokenUtils } from "../../utils/api";
+import { errorUtils, tokenUtils, API_BASE_URL } from "../../utils/api";
 
-// API 명세에 맞는 배너 타입 정의
 interface Banner {
   id: number;
   imgPath: string;
@@ -30,72 +30,82 @@ const MainBanner = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   // 배너 목록 조회
-  const fetchBanners = async () => {
-    try {
-      setLoading(true);
-      setError("");
+  const fetchBanners = useCallback(
+    async (page: number = currentPage) => {
+      try {
+        setLoading(true);
+        setError("");
 
-      const token = tokenUtils.getToken();
-      if (!token) {
-        setError("로그인이 필요합니다.");
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);
-        return;
-      }
-
-      console.log("토큰 확인:", token);
-
-      // API 명세에 맞게 page 파라미터 수정 (1부터 시작)
-      const response = await fetch(
-        `http://134.185.99.89:8080/admin/event?page=${currentPage}&size=10`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            access: token,
-          },
-        }
-      );
-
-      console.log("응답 상태:", response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log("에러 응답:", errorText);
-
-        if (response.status === 401) {
-          setError("토큰이 만료되었습니다. 다시 로그인해주세요.");
-          tokenUtils.removeToken();
+        const token = tokenUtils.getToken();
+        if (!token) {
+          setError("로그인이 필요합니다.");
           setTimeout(() => {
             navigate("/login");
-          }, 3000);
+          }, 2000);
           return;
         }
 
-        if (response.status === 500) {
-          setError("서버 내부 오류가 발생했습니다. 관리자에게 문의하세요.");
-        } else {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        return;
-      }
+        console.log("토큰 확인:", token);
 
-      const data: BannerListResponse = await response.json();
-      console.log("응답 데이터:", data);
-      setBanners(data.content);
-      setTotalPages(data.totalPages);
-    } catch (err) {
-      console.error("에러 상세:", err);
-      setError(errorUtils.getErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  };
+        // API 명세에 맞게 page 파라미터 수정 (1부터 시작)
+        const response = await axios.get(
+          `${API_BASE_URL}/admin/event?page=${page}&size=10`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              access: token,
+            },
+          }
+        );
+
+        console.log("응답 상태:", response.status);
+
+        const data: BannerListResponse = response.data;
+        console.log("응답 데이터:", data);
+        setBanners(data.content);
+        setTotalPages(data.totalPages);
+        setCurrentPage(data.page + 1); // API는 0부터 시작하므로 +1
+      } catch (err) {
+        console.error("에러 상세:", err);
+
+        // axios 에러 처리
+        if (axios.isAxiosError(err)) {
+          if (err.response?.status === 401) {
+            setError("토큰이 만료되었습니다. 다시 로그인해주세요.");
+            tokenUtils.removeToken();
+            setTimeout(() => {
+              navigate("/login");
+            }, 3000);
+            return;
+          }
+
+          if (err.response?.status === 500) {
+            setError("서버 내부 오류가 발생했습니다. 관리자에게 문의하세요.");
+          } else {
+            setError(
+              `HTTP ${err.response?.status}: ${
+                err.response?.statusText || "알 수 없는 오류"
+              }`
+            );
+          }
+        } else {
+          setError(errorUtils.getErrorMessage(err));
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentPage, navigate]
+  );
 
   useEffect(() => {
-    fetchBanners();
-  }, [currentPage]);
+    fetchBanners(currentPage);
+  }, [currentPage, fetchBanners]);
+
+  // 새로고침 핸들러
+  const handleRefresh = useCallback(() => {
+    fetchBanners(currentPage);
+  }, [fetchBanners, currentPage]);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -145,7 +155,7 @@ const MainBanner = () => {
 
             {/* 새로고침 버튼 */}
             <button
-              onClick={fetchBanners}
+              onClick={handleRefresh}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
             >
               <svg
@@ -284,9 +294,11 @@ const MainBanner = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() =>
-                          setCurrentPage((prev) => Math.max(1, prev - 1))
-                        }
+                        onClick={() => {
+                          const newPage = Math.max(1, currentPage - 1);
+                          setCurrentPage(newPage);
+                          fetchBanners(newPage);
+                        }}
                         disabled={currentPage === 1}
                         className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -296,11 +308,11 @@ const MainBanner = () => {
                         {currentPage} / {totalPages}
                       </span>
                       <button
-                        onClick={() =>
-                          setCurrentPage((prev) =>
-                            Math.min(totalPages, prev + 1)
-                          )
-                        }
+                        onClick={() => {
+                          const newPage = Math.min(totalPages, currentPage + 1);
+                          setCurrentPage(newPage);
+                          fetchBanners(newPage);
+                        }}
                         disabled={currentPage === totalPages}
                         className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >

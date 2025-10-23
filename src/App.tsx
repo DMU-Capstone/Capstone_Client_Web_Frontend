@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./App.css";
 
 // User Components
@@ -35,15 +35,7 @@ function App() {
         <Route path="/login" element={<div>로그인 페이지 연결</div>} />
         <Route path="/queue-create" element={<QueueCreate />} />
 
-        {/* Admin Routes */}
-        <Route path="/admin/dashboard" element={<Dashboard />} />
-        <Route path="/admin/members" element={<MemberList />} />
-        <Route path="/admin/mainbanner" element={<MainBanner />} />
-        <Route path="/admin/notices" element={<NoticeList />} />
-        <Route path="/admin/stores/list" element={<StoreList />} />
-      </Routes>
-    </Router>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
