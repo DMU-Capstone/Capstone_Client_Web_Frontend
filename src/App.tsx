@@ -10,6 +10,8 @@ import MyPage from "./user/businessUser/page/MyPage";
 // Business Chart Components
 import BusinessDashboard from "./admin/page/DashboardII";
 import QueueCreate from "./user/businessUser/page/QueueCreatePage";
+import BusinessPlanPage from "./user/businessUser/page/BusinessPlan";
+import AboutPage from "./user/businessUser/page/AboutPage";
 
 // Admin Components
 import Dashboard from "./admin/page/Dashboard";
@@ -36,6 +38,8 @@ function App() {
         <Route path="/chart" element={<BusinessDashboard />} />
         <Route path="/login" element={<div>로그인 페이지 연결</div>} />
         <Route path="/queue-create" element={<QueueCreate />} />
+        <Route path="/business-plan" element={<BusinessPlanPage />} />
+        <Route path="/about" element={<AboutPage />} />
 
         {/* Admin Routes */}
         <Route path="/admin/dashboard" element={<BusinessDashboard />} />
