@@ -88,7 +88,7 @@ const QueueCreate: React.FC = () => {
                 <path d="M15.5 5.5 9 12l6.5 6.5-1.5 1.5L6 12l8-8 1.5 1.5z" />
                 </svg>
             </button>
-            <h1 className="text-xl font-extrabold">대기열 생성하기</h1>
+            <h1 className="text-xl font-extrabold">호스트 생성하기</h1>
             </div>
 
             <form onSubmit={onSubmit} className="mt-4 space-y-5">
@@ -273,7 +273,7 @@ const QueueCreate: React.FC = () => {
                 type="submit"
                 className="w-full h-11 rounded-full bg-indigo-600 text-white font-semibold hover:bg-indigo-700 active:scale-[0.99]"
             >
-                대기열 생성하기
+                호스트 생성하기
             </button>
             </form>
         </div>

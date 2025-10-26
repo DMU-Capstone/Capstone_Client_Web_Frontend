@@ -37,6 +37,7 @@ export const USER_ENDPOINTS = {
 export const QUEUE_ENDPOINTS = {
   LIST: "/queue",
   CREATE: "/queue",
+  CURRENT: "/queue/current",
   DETAIL: (id: string) => `/queue/${id}`,
   UPDATE: (id: string) => `/queue/${id}`,
   DELETE: (id: string) => `/queue/${id}`,
@@ -44,6 +45,7 @@ export const QUEUE_ENDPOINTS = {
   LEAVE: (id: string) => `/queue/${id}/leave`,
   STATUS: (id: string) => `/queue/${id}/status`,
   NEXT: (id: string) => `/queue/${id}/next`,
+  
 } as const;
 
 // 광고 관련 엔드포인트
@@ -94,7 +96,19 @@ export const BIZ_ENDPOINTS = {
 } as const;
 export const HOST_ENDPOINTS = {
   CREATE: "/host",
+  DETAIL: (id: string | number) => `/host/${id}`,
 } as const;
+
+export const SMS_ENDPOINTS = {
+  SEND: "/sms/send",     // 인증번호 발송
+  VERIFY: "/sms/verify", // 인증번호 확인
+} as const;
+
+export const ADMIN_STORES = {
+  DETAIL: (id: string | number) => `/admin/stores/${id}`,
+  DELETE: (id: string | number) => `/admin/stores/${id}`,
+} as const;
+
 
 // 모든 엔드포인트를 하나의 객체로 통합
 export const API_ENDPOINTS = {

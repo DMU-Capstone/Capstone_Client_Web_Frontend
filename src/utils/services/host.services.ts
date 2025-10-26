@@ -23,3 +23,19 @@ export const createHost = async (payload: CreateHostRequest) => {
   }
   return res.data;
 };
+
+export function getCurrentUserId(): string | null {
+  try {
+    const raw = sessionStorage.getItem("user");
+    if (!raw) return null;
+    const u = JSON.parse(raw);
+
+    // 프로젝트마다 저장 키가 다를 수 있어 가능한 후보를 모두 확인
+    const cand =
+      u?.storeId ?? u?.id ?? u?.userId ?? u?.adminId ?? u?.username ?? null;
+
+    return cand != null ? String(cand) : null;
+  } catch {
+    return null;
+  }
+}
