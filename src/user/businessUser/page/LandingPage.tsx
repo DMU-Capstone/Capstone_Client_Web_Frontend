@@ -3,6 +3,7 @@ import Navbar from "../components/WebHeader";
 import Footer from "../components/WebFooter";
 
 const Landing: React.FC = () => {
+    
     return (
         <div className="min-h-dvh flex flex-col bg-white">
         <Navbar />

@@ -5,9 +5,10 @@ import "./App.css";
 import GuestScreen from "./user/UserScreen/GuestQueue";
 import GuestQueue from "./user/UserScreen/GuestQueue";
 import Main from "./user/page/Main";
+import MyPage from "./user/businessUser/page/MyPage";
 
 // Business Chart Components
-import BusinessDashboard from "./user/businessUser/page/BusinessDashboard";
+import BusinessDashboard from "./admin/page/DashboardII";
 import QueueCreate from "./user/businessUser/page/QueueCreatePage";
 
 // Admin Components
@@ -29,6 +30,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/guest-queue" element={<GuestScreen />} />
         <Route path="/guest-register" element={<GuestQPage />} />
+        <Route path="/mypage" element={<MyPage />} />
 
         {/* Business Routes */}
         <Route path="/chart" element={<BusinessDashboard />} />
@@ -36,7 +38,7 @@ function App() {
         <Route path="/queue-create" element={<QueueCreate />} />
 
         {/* Admin Routes */}
-        <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/admin/dashboard" element={<BusinessDashboard />} />
         <Route path="/admin/members" element={<MemberList />} />
         <Route path="/admin/mainbanner" element={<MainBanner />} />
         <Route path="/admin/notices" element={<NoticeList />} />

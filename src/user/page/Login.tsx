@@ -98,8 +98,8 @@ const Login = () => {
 
         console.log("로그인 성공:", response.data);
 
-        // 성공 시 대시보드로 이동
-        navigate("/admin/dashboard");
+        // 성공 시 메인으로
+        navigate("/");
       } else {
         throw new Error(response.message || "로그인에 실패했습니다.");
       }
