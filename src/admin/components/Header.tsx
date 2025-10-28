@@ -1,7 +1,10 @@
+import { useNavigate } from "react-router-dom";
+
 const Header = () => {
+  const navigate = useNavigate();
   return (
     <div className="fixed top-0 left-0 right-0 h-16 bg-white text-white z-50 flex items-center justify-between px-6">
-      <h1 className="text-xl font-bold">WAIT IT : IT</h1>
+      <h1 className="text-xl font-bold" onClick={() => navigate("/")}>WAIT IT : IT</h1>
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
           <input

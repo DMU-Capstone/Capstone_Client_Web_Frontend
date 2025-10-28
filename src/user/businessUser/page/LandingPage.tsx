@@ -1,8 +1,11 @@
 import React from "react";
+import Img2 from "../../../asset/About/2.png";
+import Img7 from "../../../asset/About/7.png";
 import Navbar from "../components/WebHeader";
 import Footer from "../components/WebFooter";
 
 const Landing: React.FC = () => {
+    
     return (
         <div className="min-h-dvh flex flex-col bg-white">
         <Navbar />
@@ -18,7 +21,18 @@ const Landing: React.FC = () => {
                 </p>
                 </div>
                 <div className="relative w-full h-[420px] bg-gray-100 rounded-3xl shadow-inner flex items-center justify-center">
-                <div className="w-[260px] h-[360px] bg-white rounded-[36px] shadow-xl border border-gray-200" />
+
+                <div className="flex gap-4">
+                {[Img2, Img7].map((src, i) => (
+                    <div
+                    key={i}
+                    className="w-[160px] h-[360px] rounded-[36px] shadow-xl border border-gray-200 overflow-hidden"
+                    >
+                    <img src={src} alt={`매장 화면 ${i + 1}`} className="w-full h-full object-cover" />
+                    </div>
+                ))}
+
+                </div>
                 </div>
             </div>
             </section>
