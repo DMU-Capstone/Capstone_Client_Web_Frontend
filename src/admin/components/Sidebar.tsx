@@ -96,7 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
       ),
       description: "대기열 현황 조회",
       subMenus: [
-        { id: "실시간대기열", label: "실시간대기열", description: "현재 대기 현황", route: "/admin/queue/realtime" },
+        { id: "실시간대기열", label: "실시간대기열", description: "현재 대기 현황", route: "/admin/queue/active" },
         { id: "대기열이력", label: "대기열이력", description: "과거 대기 기록", route: "/admin/queue/history" },
         { id: "대기열설정", label: "대기열설정", description: "대기열 관리 설정", route: "/admin/queue/settings" },
       ],

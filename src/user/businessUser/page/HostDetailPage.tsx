@@ -1,14 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-
-// 프로젝트 경로 맞게 조정
 import Navbar from "../components/WebHeader";
 import Footer from "../components/WebFooter";
-import { apiGet, apiDelete, errorUtils } from "../../../utils/api";
-import { ADMIN_STORES } from "../../../utils/apiEndpoints";
-import { API_BASE_URL } from "../../../utils/api"; // ← 절대 URL 조합에 사용
+import { API_BASE_URL } from "../../../utils/api"; // 프로젝트에 있는 값 사용
 
-// ✅ 서버 응답과 동일한 타입
+// 서버 응답 타입
 type StoreDetail = {
   id: number;
   name: string;
@@ -23,53 +18,54 @@ type StoreDetail = {
     longitude: number;
   };
   operating_hours: {
-    open: string;   // "04:00"
-    close: string;  // "06:00"
+    open: string;
+    close: string;
   };
 };
 
 const fallbackImg =
   "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=1200&auto=format&fit=crop";
-const pill =
-  "inline-flex items-center rounded-full bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1";
 
-// 상대경로 → 절대경로 보정
+// 상대경로 → 절대경로
 const toAbsolute = (p?: string) =>
   !p ? undefined : p.startsWith("http") ? p : `${API_BASE_URL}${p}`;
 
-const HostDetailPage: React.FC = () => {
-  const { id: routeId } = useParams(); // "/admin/stores/:id" 에서만 사용
-  const nav = useNavigate();
-
+const StoreDetailOne: React.FC = () => {
   const [data, setData] = useState<StoreDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (!routeId) {
-      setErr("대상 ID를 찾을 수 없습니다.");
-      setLoading(false);
-      return;
-    }
-
     let alive = true;
+
     (async () => {
       try {
-        const res = await apiGet<StoreDetail>(ADMIN_STORES.DETAIL(routeId)); // 문자열 id 허용
+        setLoading(true);
+        setErr(null);
+
+        const res = await fetch(`${API_BASE_URL}/stores/55`, {
+          headers: { Accept: "application/json" },
+        });
+
+        if (!res.ok) {
+          throw new Error(`요청 실패: ${res.status} ${res.statusText}`);
+        }
+
+        const json = (await res.json()) as StoreDetail;
         if (!alive) return;
-        if (res.success) setData(res.data ?? null);
-        else throw new Error(res.message || "상세 정보를 불러오지 못했습니다.");
-      } catch (e) {
+        setData(json);
+      } catch (e: any) {
         if (!alive) return;
-        setErr(errorUtils.getErrorMessage(e));
+        setErr(e?.message ?? "상세 정보를 불러오지 못했습니다.");
       } finally {
         if (alive) setLoading(false);
       }
     })();
 
-    return () => { alive = false; };
-  }, [routeId]);
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const firstImage = useMemo(
     () =>
@@ -80,7 +76,11 @@ const HostDetailPage: React.FC = () => {
   );
 
   const restImages = useMemo(
-    () => (data?.images ?? []).slice(1, 3).map(toAbsolute).filter(Boolean) as string[],
+    () =>
+      (data?.images ?? [])
+        .slice(1, 3)
+        .map(toAbsolute)
+        .filter(Boolean) as string[],
     [data]
   );
 
@@ -92,22 +92,6 @@ const HostDetailPage: React.FC = () => {
       .filter(Boolean)
       .slice(0, 8);
   }, [data]);
-
-  const onDelete = async () => {
-    if (!routeId) return;
-    if (!window.confirm("대기열을 지금 삭제하시겠습니까?")) return;
-    try {
-      setDeleting(true);
-      const res = await apiDelete(ADMIN_STORES.DELETE(routeId));
-      if (!res.success) throw new Error(res.message || "삭제에 실패했습니다.");
-      alert("대기열이 삭제되었습니다.");
-      nav(-1);
-    } catch (e) {
-      setErr(errorUtils.getErrorMessage(e));
-    } finally {
-      setDeleting(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-white text-gray-900 flex flex-col">
@@ -149,7 +133,11 @@ const HostDetailPage: React.FC = () => {
                     key={idx}
                     className="w-[120px] h-[120px] rounded border border-gray-200 overflow-hidden"
                   >
-                    <img src={src} alt={`이미지 ${idx + 2}`} className="w-full h-full object-cover" />
+                    <img
+                      src={src}
+                      alt={`이미지 ${idx + 2}`}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 ))}
               </div>
@@ -166,10 +154,14 @@ const HostDetailPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1.5">운영 시간</label>
+                <label className="block text-sm font-semibold mb-1.5">
+                  운영 시간
+                </label>
                 <input
                   readOnly
-                  value={`${data.operating_hours?.open ?? ""} ~ ${data.operating_hours?.close ?? ""}`}
+                  value={`${data.operating_hours?.open ?? ""} ~ ${
+                    data.operating_hours?.close ?? ""
+                  }`}
                   className="w-full h-10 rounded border border-gray-200 px-3 bg-gray-50"
                 />
               </div>
@@ -187,23 +179,29 @@ const HostDetailPage: React.FC = () => {
                     {data.location?.station ? `${data.location.station} · ` : ""}
                     {data.location?.distance ?? ""}
                   </div>
-                  {(data.location?.latitude != null &&
-                    data.location?.longitude != null) && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      lat {data.location.latitude}, lng {data.location.longitude}
-                    </div>
-                  )}
+                  {data.location?.latitude != null &&
+                    data.location?.longitude != null && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        lat {data.location.latitude}, lng{" "}
+                        {data.location.longitude}
+                      </div>
+                    )}
                 </div>
               </div>
             </div>
 
-            {/* 키워드 칩 */}
+            {/* 키워드 */}
             <div>
-              <label className="block text-sm font-semibold mb-2">대표 키워드</label>
+              <label className="block text-sm font-semibold mb-2">
+                대표 키워드
+              </label>
               <div className="flex flex-wrap gap-2">
                 {keywords.length > 0 ? (
                   keywords.map((k, i) => (
-                    <span key={`${k}-${i}`} className={pill}>
+                    <span
+                      key={`${k}-${i}`}
+                      className="inline-flex items-center rounded-full bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1"
+                    >
                       #{k}
                     </span>
                   ))
@@ -223,18 +221,6 @@ const HostDetailPage: React.FC = () => {
                 className="w-full rounded border border-gray-200 px-3 py-2 bg-gray-50"
               />
             </div>
-
-            {/* 삭제 버튼(선택) */}
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={onDelete}
-                disabled={deleting}
-                className="w-full h-11 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-60"
-              >
-                {deleting ? "삭제 중..." : "대기열 삭제"}
-              </button>
-            </div>
           </div>
         )}
       </main>
@@ -244,4 +230,4 @@ const HostDetailPage: React.FC = () => {
   );
 };
 
-export default HostDetailPage;
+export default StoreDetailOne;

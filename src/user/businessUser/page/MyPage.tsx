@@ -117,8 +117,7 @@ const MyPage: React.FC = () => {
           <div className="mt-6">
             <div className="text-xs text-gray-400 mb-2">대기 관련 정보</div>
             <div className="rounded-xl border border-gray-200 p-3">
-              <Row label="현재 활성화 호스트" href="/admin/stores/1" />
-              <Row label="호스팅 내역" href="/mypage/queue/history" />
+              <Row label="현재 활성화 호스트" href="/stores/55" />
               <Row label="호스트 생성" href="/queue/register" />
               <Row label="대시보드" href="/admin/dashboard" />
             </div>
