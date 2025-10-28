@@ -24,9 +24,23 @@ interface MenuItem {
   route?: string;
 }
 
+// [ADD] 세션에서 역할 읽기
+const getCurrentRole = (): "ROLE_ADMIN" | "ROLE_HOST" => {
+  try {
+    const raw = sessionStorage.getItem("user");
+    const user = raw ? JSON.parse(raw) : null;
+    const role = (user?.role as string) || "ROLE_HOST";
+    return role.toUpperCase() as any;
+  } catch {
+    return "ROLE_HOST";
+  }
+};
+
 const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
   const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const role = getCurrentRole();
 
   const menuItems: MenuItem[] = [
     {
@@ -34,24 +48,9 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
       label: "대시보드",
       route: "/admin/dashboard",
       icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"
-          />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z" />
         </svg>
       ),
       description: "메인 대시보드",
@@ -60,262 +59,104 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
       id: "회원관리",
       label: "회원관리",
       icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-          />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
         </svg>
       ),
       description: "회원 정보 관리",
       subMenus: [
-        {
-          id: "자영업자 회원",
-          label: "자영업자 회원",
-          description: "전체 회원 조회",
-          route: "/admin/members/business",
-        },
-        {
-          id: "사용자 회원",
-          label: "사용자 회원",
-          description: "신규 회원 추가",
-          route: "/admin/members",
-        },
-        {
-          id: "회원통계",
-          label: "회원통계",
-          description: "회원 현황 분석",
-          route: "/admin/members/statistics",
-        },
+        { id: "자영업자 회원", label: "자영업자 회원", description: "전체 회원 조회", route: "/admin/members/business" },
+        { id: "사용자 회원", label: "사용자 회원", description: "신규 회원 추가", route: "/admin/members" },
+        { id: "회원통계", label: "회원통계", description: "회원 현황 분석", route: "/admin/members/statistics" },
       ],
     },
     {
       id: "매장관리",
       label: "매장관리",
       icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-          />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
       ),
       description: "매장 정보 관리",
       subMenus: [
-        {
-          id: "매장목록",
-          label: "매장목록",
-          description: "전체 매장 조회",
-          route: "/admin/stores/list",
-        },
-        {
-          id: "매장등록",
-          label: "매장등록",
-          description: "신규 매장 등록",
-          route: "/admin/stores/register",
-        },
-        {
-          id: "매장승인",
-          label: "매장승인",
-          description: "매장 승인 관리",
-          route: "/admin/stores/approval",
-        },
-        {
-          id: "매장통계",
-          label: "매장통계",
-          description: "매장 현황 분석",
-          route: "/admin/stores/statistics",
-        },
+        { id: "매장목록", label: "매장목록", description: "전체 매장 조회", route: "/admin/stores/list" },
+        { id: "매장등록", label: "매장등록", description: "신규 매장 등록", route: "/admin/stores/register" },
+        { id: "매장승인", label: "매장승인", description: "매장 승인 관리", route: "/admin/stores/approval" },
+        { id: "매장통계", label: "매장통계", description: "매장 현황 분석", route: "/admin/stores/statistics" },
       ],
     },
     {
       id: "대기열내역",
       label: "대기열내역",
       icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-          />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
         </svg>
       ),
       description: "대기열 현황 조회",
       subMenus: [
-        {
-          id: "실시간대기열",
-          label: "실시간대기열",
-          description: "현재 대기 현황",
-          route: "/admin/queue/realtime",
-        },
-        {
-          id: "대기열이력",
-          label: "대기열이력",
-          description: "과거 대기 기록",
-          route: "/admin/queue/history",
-        },
-        {
-          id: "대기열설정",
-          label: "대기열설정",
-          description: "대기열 관리 설정",
-          route: "/admin/queue/settings",
-        },
+        { id: "실시간대기열", label: "실시간대기열", description: "현재 대기 현황", route: "/admin/queue/active" },
+        { id: "대기열이력", label: "대기열이력", description: "과거 대기 기록", route: "/admin/queue/history" },
+        { id: "대기열설정", label: "대기열설정", description: "대기열 관리 설정", route: "/admin/queue/settings" },
       ],
     },
     {
       id: "이벤트배너등록",
       label: "이벤트배너등록",
       icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
-          />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
         </svg>
       ),
       description: "배너 및 이벤트 관리",
       subMenus: [
-        {
-          id: "배너관리",
-          label: "배너관리",
-          description: "메인 배너 관리",
-          route: "/admin/mainbanner",
-        },
-        {
-          id: "이벤트관리",
-          label: "이벤트관리",
-          description: "이벤트 등록/수정",
-          route: "/admin/notices",
-        },
-        {
-          id: "광고관리",
-          label: "광고관리",
-          description: "광고 콘텐츠 관리",
-          route: "/admin/ads",
-        },
+        { id: "배너관리", label: "배너관리", description: "메인 배너 관리", route: "/admin/mainbanner" },
+        { id: "이벤트관리", label: "이벤트관리", description: "이벤트 등록/수정", route: "/admin/notices" },
+        { id: "광고관리", label: "광고관리", description: "광고 콘텐츠 관리", route: "/admin/ads" },
       ],
     },
     {
       id: "실시간모니터링",
       label: "실시간모니터링",
       icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-          />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
       ),
       description: "실시간 대시보드",
       subMenus: [
-        {
-          id: "대시보드",
-          label: "대시보드",
-          description: "전체 현황 모니터링",
-          route: "/admin/monitoring/dashboard",
-        },
-        {
-          id: "알림관리",
-          label: "알림관리",
-          description: "시스템 알림 설정",
-          route: "/admin/monitoring/notifications",
-        },
-        {
-          id: "로그조회",
-          label: "로그조회",
-          description: "시스템 로그 확인",
-          route: "/admin/monitoring/logs",
-        },
+        { id: "대시보드", label: "대시보드", description: "전체 현황 모니터링", route: "/admin/monitoring/dashboard" },
+        { id: "알림관리", label: "알림관리", description: "시스템 알림 설정", route: "/admin/monitoring/notifications" },
+        { id: "로그조회", label: "로그조회", description: "시스템 로그 확인", route: "/admin/monitoring/logs" },
       ],
     },
     {
       id: "설정",
       label: "설정",
       icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-          />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       ),
       description: "시스템 설정",
       subMenus: [
-        {
-          id: "시스템설정",
-          label: "시스템설정",
-          description: "기본 시스템 설정",
-          route: "/admin/settings/system",
-        },
-        {
-          id: "사용자권한",
-          label: "사용자권한",
-          description: "관리자 권한 관리",
-          route: "/admin/settings/permissions",
-        },
-        {
-          id: "백업복원",
-          label: "백업복원",
-          description: "데이터 백업/복원",
-          route: "/admin/settings/backup",
-        },
+        { id: "시스템설정", label: "시스템설정", description: "기본 시스템 설정", route: "/admin/settings/system" },
+        { id: "사용자권한", label: "사용자권한", description: "관리자 권한 관리", route: "/admin/settings/permissions" },
+        { id: "백업복원", label: "백업복원", description: "데이터 백업/복원", route: "/admin/settings/backup" },
       ],
     },
   ];
 
+  // [ADD] ROLE_HOST 라면 특정 메뉴 숨김
+  const hiddenForHost = new Set(["회원관리", "매장관리", "이벤트배너등록"]);
+  const visibleMenu =
+    role === "ROLE_HOST" ? menuItems.filter(m => !hiddenForHost.has(m.id)) : menuItems;
+
   const handleMenuClick = (menuId: string, route?: string) => {
     onSelectMenu(menuId);
-
-    if (route) {
-      navigate(route);
-    }
+    if (route) navigate(route);
   };
 
   return (
@@ -338,8 +179,12 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
             </svg>
           </div>
           <div className="text-white">
-            <h1 className="text-lg font-bold">관리자 패널</h1>
-            <p className=" text-sm">Admin Dashboard</p>
+            <h1 className="text-lg font-bold">
+              {role === "ROLE_ADMIN" ? "관리자 패널" : "사업자 패널"}
+            </h1>
+            <p className=" text-sm">
+              {role === "ROLE_ADMIN" ? "Admin Dashboard" : "Business Dashboard"}
+            </p>
           </div>
         </div>
       </div>
@@ -347,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
       {/* 메뉴 리스트 */}
       <nav className="flex-1 py-4 overflow-y-auto">
         <ul className="space-y-1 px-3">
-          {menuItems.map((item) => (
+          {visibleMenu.map((item) => (
             <li key={item.id}>
               <div
                 onMouseEnter={() => setHoveredMenu(item.id)}
@@ -356,13 +201,13 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
                 <button
                   onClick={() => handleMenuClick(item.id, item.route)}
                   className={`
-                      w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors duration-200
-                      ${
-                        selectedMenu === item.id
-                          ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
-                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                      }
-                    `}
+                    w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors duration-200
+                    ${
+                      selectedMenu === item.id
+                        ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
+                        : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                    }
+                  `}
                 >
                   <div
                     className={`
@@ -381,9 +226,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
                       className={`
                         text-sm font-medium truncate
                         ${
-                          selectedMenu === item.id
-                            ? "text-blue-700"
-                            : "text-gray-900"
+                          selectedMenu === item.id ? "text-blue-700" : "text-gray-900"
                         }
                       `}
                     >
@@ -393,16 +236,13 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
                       className={`
                         text-xs truncate
                         ${
-                          selectedMenu === item.id
-                            ? "text-blue-500"
-                            : "text-gray-500"
+                          selectedMenu === item.id ? "text-blue-500" : "text-gray-500"
                         }
                       `}
                     >
                       {item.description}
                     </p>
                   </div>
-                  {/* 화살표 아이콘 */}
                   {item.subMenus && (
                     <svg
                       className={`w-4 h-4 transition-transform duration-200 ${
@@ -412,33 +252,25 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   )}
                 </button>
 
-                {/* 서브메뉴 - 인라인으로 배치 */}
                 {item.subMenus && hoveredMenu === item.id && (
                   <ul className="mt-1 space-y-1">
-                    {item.subMenus.map((subMenu) => (
-                      <li key={subMenu.id}>
+                    {item.subMenus.map((sub) => (
+                      <li key={sub.id}>
                         <button
-                          onClick={() =>
-                            handleMenuClick(subMenu.id, subMenu.route)
-                          }
+                          onClick={() => handleMenuClick(sub.id, sub.route)}
                           className="w-full flex items-center px-8 py-2 text-left hover:bg-gray-50 transition-colors duration-200 rounded-lg"
                         >
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-700 truncate">
-                              {subMenu.label}
+                              {sub.label}
                             </p>
                             <p className="text-xs text-gray-500 truncate">
-                              {subMenu.description}
+                              {sub.description}
                             </p>
                           </div>
                         </button>
@@ -452,7 +284,6 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
         </ul>
       </nav>
 
-      {/* 푸터 */}
       <div className="border-t border-gray-200 p-4">
         <div className="text-center">
           <p className="text-xs text-gray-500">© 2025 Admin Panel</p>

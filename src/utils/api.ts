@@ -26,20 +26,21 @@ export interface ApiRequestOptions {
   headers?: Record<string, string>;
   body?: any;
   timeout?: number;
+  credentials?: RequestCredentials; // 필요 시 쿠키 사용
 }
 
-// 기본 헤더 설정
+// ──────────────────────────────────────────────────────────────
+// 토큰 가져오기: sessionStorage 우선, 없으면 localStorage
+const getAuthToken = (): string | null =>
+  sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken") || null;
+
+// 기본 헤더(공통). ⚠️ 여기서는 Content-Type을 넣지 않음!
 const getDefaultHeaders = (): Record<string, string> => {
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    Accept: "application/json",
   };
-
-  // 토큰이 있으면 Authorization 헤더 추가
-  const token = localStorage.getItem("accessToken");
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
+  const token = getAuthToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
   return headers;
 };
 
@@ -48,10 +49,32 @@ export const apiRequest = async <T = any>(
   endpoint: string,
   options: ApiRequestOptions = {}
 ): Promise<ApiResponse<T>> => {
-  const { method = "GET", headers = {}, body, timeout = 10000 } = options;
+  const {
+    method = "GET",
+    headers: customHeaders = {},
+    body,
+    timeout = 10000,
+    credentials, // 필요 시 "include"
+  } = options;
 
   const url = `${API_BASE_URL}${endpoint}`;
   const defaultHeaders = getDefaultHeaders();
+
+  // FormData 여부 판단
+  const isFormData =
+    typeof FormData !== "undefined" && body instanceof FormData;
+
+  // 최종 헤더 구성
+  const headers: Record<string, string> = { ...defaultHeaders, ...customHeaders };
+
+  // ✨ FormData면 Content-Type을 절대 수동 지정하지 말 것!
+  if (isFormData) {
+    delete headers["Content-Type"];
+    delete headers["content-type"];
+  } else if (body !== undefined && body !== null) {
+    // JSON 바디일 때만 설정
+    headers["Content-Type"] = headers["Content-Type"] || "application/json";
+  }
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -59,100 +82,99 @@ export const apiRequest = async <T = any>(
   try {
     const response = await fetch(url, {
       method,
-      headers: {
-        ...defaultHeaders,
-        ...headers,
-      },
-      body: body ? JSON.stringify(body) : undefined,
+      headers,
+      body: isFormData
+        ? (body as FormData)
+        : body !== undefined && body !== null
+        ? JSON.stringify(body)
+        : undefined,
       signal: controller.signal,
+      credentials, // 필요하면 { credentials: "include" } 로 호출
     });
 
     clearTimeout(timeoutId);
 
+    // 204 등 비어있는 응답 처리
+    const contentType = response.headers.get("content-type") || "";
+    const hasJson = contentType.includes("application/json");
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP ${response.status}: ${response.statusText}`
-      );
+      let message = `HTTP ${response.status}: ${response.statusText}`;
+      if (hasJson) {
+        const errorData = await response.json().catch(() => ({} as any));
+        message = errorData?.message || message;
+      } else {
+        const text = await response.text().catch(() => "");
+        if (text) message = text;
+      }
+      throw new Error(message);
     }
 
-    const data = await response.json();
+    const data = hasJson ? await response.json() : (undefined as any);
+
     return {
       success: true,
       data,
-      headers: response.headers, // 헤더 추가
+      headers: response.headers,
     };
   } catch (error) {
     clearTimeout(timeoutId);
 
     if (error instanceof Error) {
       if (error.name === "AbortError") {
-        throw new Error("요청 시간이 초과되었습니다.");
+        return { success: false, message: "요청 시간이 초과되었습니다." };
       }
-      throw error;
+      return { success: false, message: error.message };
     }
 
-    throw new Error("알 수 없는 오류가 발생했습니다.");
+    return { success: false, message: "알 수 없는 오류가 발생했습니다." };
   }
 };
 
-// GET 요청
+// 편의 메서드들
 export const apiGet = <T = any>(
   endpoint: string,
   options?: Omit<ApiRequestOptions, "method" | "body">
 ) => apiRequest<T>(endpoint, { ...options, method: "GET" });
 
-// POST 요청
 export const apiPost = <T = any>(
   endpoint: string,
   body?: any,
   options?: Omit<ApiRequestOptions, "method" | "body">
 ) => apiRequest<T>(endpoint, { ...options, method: "POST", body });
 
-// PUT 요청
 export const apiPut = <T = any>(
   endpoint: string,
   body?: any,
   options?: Omit<ApiRequestOptions, "method" | "body">
 ) => apiRequest<T>(endpoint, { ...options, method: "PUT", body });
 
-// DELETE 요청
 export const apiDelete = <T = any>(
   endpoint: string,
   options?: Omit<ApiRequestOptions, "method" | "body">
 ) => apiRequest<T>(endpoint, { ...options, method: "DELETE" });
 
-// PATCH 요청
 export const apiPatch = <T = any>(
   endpoint: string,
   body?: any,
   options?: Omit<ApiRequestOptions, "method" | "body">
 ) => apiRequest<T>(endpoint, { ...options, method: "PATCH", body });
 
-// 토큰 관리 유틸리티
+// 토큰 유틸
 export const tokenUtils = {
-  // 토큰 저장
   setToken: (token: string) => {
-    localStorage.setItem("accessToken", token);
+    sessionStorage.setItem("accessToken", token); // 로그인 로직과 일치
+    localStorage.setItem("accessToken", token);    // (선택) 양쪽 저장
   },
-
-  // 토큰 가져오기
-  getToken: (): string | null => {
-    return localStorage.getItem("accessToken");
-  },
-
-  // 토큰 제거
+  getToken: (): string | null => getAuthToken(),
   removeToken: () => {
+    sessionStorage.removeItem("accessToken");
     localStorage.removeItem("accessToken");
   },
-
-  // 토큰 유효성 검사
   isTokenValid: (): boolean => {
-    const token = localStorage.getItem("accessToken");
+    const token = getAuthToken();
     if (!token) return false;
-
     try {
-      // JWT 토큰의 만료 시간 확인 (간단한 구현)
       const payload = JSON.parse(atob(token.split(".")[1]));
       const currentTime = Date.now() / 1000;
       return payload.exp > currentTime;
@@ -162,34 +184,22 @@ export const tokenUtils = {
   },
 };
 
-// 에러 처리 유틸리티
+// 에러 유틸
 export const errorUtils = {
-  // API 에러 메시지 추출
   getErrorMessage: (error: any): string => {
     if (typeof error === "string") return error;
     if (error?.message) return error.message;
     if (error?.response?.data?.message) return error.response.data.message;
     return "알 수 없는 오류가 발생했습니다.";
   },
-
-  // 에러 로깅
   logError: (error: any, context?: string) => {
     console.error(`[API Error]${context ? ` [${context}]` : ""}:`, error);
   },
 };
 
-// API 상태 관리
+// API 상태(옵셔널)
 export const apiStatus = {
-  // 로딩 상태 관리
   isLoading: false,
-
-  // 로딩 시작
-  startLoading: () => {
-    apiStatus.isLoading = true;
-  },
-
-  // 로딩 종료
-  stopLoading: () => {
-    apiStatus.isLoading = false;
-  },
+  startLoading: () => (apiStatus.isLoading = true),
+  stopLoading: () => (apiStatus.isLoading = false),
 };

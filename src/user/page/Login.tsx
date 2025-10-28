@@ -4,33 +4,44 @@ import { apiPost } from "../../utils/api";
 import { AUTH_ENDPOINTS } from "../../utils/apiEndpoints";
 import { tokenUtils, errorUtils } from "../../utils/api";
 
-// 로그인 요청 타입 정의
 interface LoginRequest {
   username: string;
   password: string;
 }
+
 interface LoginResponse {
-  message: string;
-  username: string;
+  access_token: string;
+  refresh_token: string;
+  user_id: string;
   name: string;
   role: string;
 }
 
+// ✅ 휴대폰 하이픈 자동 포맷터 (010-1234-5678)
+const formatPhone = (v: string) =>
+  v
+    .replace(/[^\d]/g, "") // 숫자 외 제거
+    .slice(0, 11) // 최대 11자리
+    .replace(/^(\d{3})(\d{0,4})(\d{0,4})$/, (_, a, b, c) =>
+      [a, b, c].filter(Boolean).join("-")
+    );
+
 const Login = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // ✅ username은 휴대폰처럼 자동 하이픈 포맷
+    if (name === "username") {
+      setFormData((prev) => ({ ...prev, username: formatPhone(value) }));
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,67 +50,49 @@ const Login = () => {
     setError("");
 
     try {
-      // 로그인 API 호출 (헤더 포함)
       const response = await apiPost<LoginResponse>(
         AUTH_ENDPOINTS.LOGIN,
-        formData as LoginRequest,
         {
-          headers: {
-            "X-Client-Type": "web",
-          },
-        }
+          username: formData.username, // 하이픈 그대로 유지
+          password: formData.password,
+        } as LoginRequest,
+        { headers: { "X-Client-Type": "web" } }
       );
 
-      console.log("로그인 API 응답:", response);
-      console.log("응답 헤더:", response.headers);
-
       if (response.success && response.data) {
+        // ✅ Authorization 헤더에서 Bearer 토큰 추출
         const authHeader =
           response.headers?.get("authorization") ||
           response.headers?.get("Authorization");
 
-        console.log("Authorization 헤더:", authHeader);
-
-        if (authHeader && authHeader.startsWith("Bearer ")) {
-          // Bearer 토큰에서 실제 JWT 토큰 추출
-          const token = authHeader.substring(7); // "Bearer " 제거
-
-          // 토큰 저장
+        if (authHeader?.startsWith("Bearer ")) {
+          const token = authHeader.substring(7);
           tokenUtils.setToken(token);
           sessionStorage.setItem("accessToken", token);
-
-          console.log("JWT 토큰 저장 완료:", token);
-          console.log(
-            "Session Storage 확인:",
-            sessionStorage.getItem("accessToken")
-          );
-        } else {
-          console.warn("Authorization 헤더에서 토큰을 찾을 수 없습니다.");
-          console.log("모든 헤더:", response.headers);
-
-          // 헤더를 객체로 변환해서 확인
-          const headersObj: Record<string, string> = {};
-          response.headers?.forEach((value, key) => {
-            headersObj[key] = value;
-          });
-          console.log("헤더 객체:", headersObj);
         }
 
-        // 사용자 정보 저장
+        // ✅ 명세에 따라 user_id, access_token, refresh_token 저장
+        const { user_id, name, role, access_token, refresh_token } =
+          response.data;
+
+        if (access_token) {
+          sessionStorage.setItem("accessToken", access_token);
+        }
+        if (refresh_token) {
+          sessionStorage.setItem("refreshToken", refresh_token);
+        }
+
+        // ✅ 사용자 정보 저장 (명세 반영)
         const userInfo = {
-          id: response.data.username,
-          name: response.data.name,
-          username: response.data.username,
-          role: response.data.role,
+          id: user_id,
+          name,
+          username: formData.username,
+          role,
         };
-
         sessionStorage.setItem("user", JSON.stringify(userInfo));
-        console.log("사용자 정보 저장 완료:", userInfo);
+        sessionStorage.setItem("user_id", user_id);
 
-        console.log("로그인 성공:", response.data);
-
-        // 성공 시 대시보드로 이동
-        navigate("/admin/dashboard");
+        navigate("/");
       } else {
         throw new Error(response.message || "로그인에 실패했습니다.");
       }
@@ -107,7 +100,6 @@ const Login = () => {
       const errorMessage = errorUtils.getErrorMessage(err);
       setError(errorMessage);
       errorUtils.logError(err, "Login");
-      console.error("로그인 에러:", err);
     } finally {
       setIsLoading(false);
     }
@@ -133,9 +125,7 @@ const Login = () => {
               />
             </svg>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            관리자 로그인
-          </h2>
+          <h2 className="mt-6 text-3xl font-bold text-gray-900">관리자 로그인</h2>
           <p className="mt-2 text-sm text-gray-600">
             줄서기 어플 관리자 페이지에 로그인하세요
           </p>
@@ -145,7 +135,7 @@ const Login = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="bg-white py-8 px-6 shadow-lg rounded-lg">
             <div className="space-y-4">
-              {/* 아이디 입력 */}
+              {/* 아이디(휴대폰) */}
               <div>
                 <label
                   htmlFor="username"
@@ -156,16 +146,18 @@ const Login = () => {
                 <input
                   id="username"
                   name="username"
-                  type="text"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel"
                   required
                   value={formData.username}
                   onChange={handleInputChange}
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="아이디를 입력하세요"
+                  placeholder="010-1234-5678"
                 />
               </div>
 
-              {/* 비밀번호 입력 */}
+              {/* 비밀번호 */}
               <div>
                 <label
                   htmlFor="password"
@@ -193,12 +185,12 @@ const Login = () => {
               </div>
             )}
 
-            {/* 로그인 버튼 */}
-            <div className="mt-6">
+            {/* 버튼들 */}
+            <div className="mt-6 space-y-3">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="group relative w-full flex justify-center py-2 px-4 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
                 {isLoading ? (
                   <div className="flex items-center">
@@ -228,24 +220,28 @@ const Login = () => {
                   "로그인"
                 )}
               </button>
+
+              <Link
+                to="/signup"
+                className="inline-flex w-full items-center justify-center py-2 px-4 text-sm font-medium rounded-md border border-blue-600 text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              >
+                회원가입
+              </Link>
             </div>
 
             {/* 추가 옵션 */}
             <div className="mt-4 flex items-center justify-between">
-              <div className="flex items-center">
+              <label className="flex items-center">
                 <input
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-2 block text-sm text-gray-700"
-                >
+                <span className="ml-2 block text-sm text-gray-700">
                   로그인 상태 유지
-                </label>
-              </div>
+                </span>
+              </label>
 
               <div className="text-sm">
                 <Link
@@ -259,7 +255,7 @@ const Login = () => {
           </div>
         </form>
 
-        {/* 푸터 정보 */}
+        {/* 푸터 */}
         <div className="text-center">
           <p className="text-xs text-gray-500">
             © 2025 줄서기 어플 관리자 페이지. All rights reserved.
