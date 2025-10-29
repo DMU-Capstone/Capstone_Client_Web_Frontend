@@ -1,10 +1,9 @@
-// src/pages/admin/AdminHostsPage.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { apiGet, API_BASE_URL } from "../../utils/api";
+import ProtectedImg from "../components/ProtectedImg";
 
-// 페이지 공통 타입
 type PageResp<T> = {
   content: T[];
   page: number;
@@ -13,20 +12,33 @@ type PageResp<T> = {
   totalElements: number;
 };
 
-// ✅ 새 응답 스키마에 맞춘 항목 타입
 type AdminHostItem = {
   id: number;
-  name: string; // ← hostName 대신 name
+  name?: string;        // API마다 다르므로 optional
+  hostName?: string;
+
   hostImage?: {
     id: number;
     imagePath: string;
     createdAt: string;
     representative: boolean;
   } | null;
+
+  // 다른 응답 대비
+  imgUrl?: string;
+  imagePath?: string;
 };
 
 const toAbsolute = (p?: string) =>
-  !p ? "" : p.startsWith("http") ? p : `${API_BASE_URL}${p}`;
+  !p ? "" : p.startsWith("http")
+    ? encodeURI(p)                                   // 외부 URL도 안전하게
+    : `${API_BASE_URL}${encodeURI(p)}`;              // ← 경로 부분만 encode
+const getDisplayName = (h: AdminHostItem) =>
+  (h.name && h.name.trim()) ||
+  (h.hostName && h.hostName.trim()) ||
+  `호스트 #${h.id}`;
+const getImageUrl = (h: AdminHostItem) =>
+  toAbsolute(h.hostImage?.imagePath || h.imagePath || h.imgUrl || "");
 
 const AdminHostsPage: React.FC = () => {
   const [page, setPage] = useState(1);
@@ -56,12 +68,15 @@ const AdminHostsPage: React.FC = () => {
 
   const total = resp?.totalElements ?? 0;
 
+  // ✅ 검색도 표시용 이름으로 수행 (undefined 안전)
   const filtered = useMemo(() => {
     const list = resp?.content ?? [];
     const q = search.trim().toLowerCase();
     if (!q) return list;
-    return list.filter((x) => x.name.toLowerCase().includes(q));
+    return list.filter((x) => getDisplayName(x).toLowerCase().includes(q));
   }, [resp, search]);
+
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -71,7 +86,7 @@ const AdminHostsPage: React.FC = () => {
 
         <main className="flex-1 p-6 lg:p-8">
           <div className="mb-6">
-            <h1 className="text-2xl font-extrabold text-gray-900">매장 관리</h1>
+            <h1 className="text-2xl font-extrabold text-gray-900">실시간 대기열 관리</h1>
             <p className="text-sm text-gray-500 mt-1">총 {total}개</p>
           </div>
 
@@ -104,7 +119,7 @@ const AdminHostsPage: React.FC = () => {
             </button>
           </div>
 
-          {/* 목록 헤더 (이미지/이름/관리만 남김) */}
+          {/* 목록 */}
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
             <div className="hidden lg:grid grid-cols-[80px_1fr_120px] px-4 py-3 text-xs font-semibold text-gray-500 border-b">
               <div>이미지</div>
@@ -119,24 +134,24 @@ const AdminHostsPage: React.FC = () => {
             )}
 
             {!loading && !err && filtered.map((h) => {
-              const img = toAbsolute(h.hostImage?.imagePath);
+              const displayName = getDisplayName(h);
+              const img = getImageUrl(h);
+
               return (
                 <div
                   key={h.id}
                   className="grid grid-cols-1 lg:grid-cols-[80px_1fr_120px] items-center gap-3 px-4 py-3 border-t first:border-t-0"
                 >
                   <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
-                    {img ? (
-                      <img src={img} alt={h.name} className="w-full h-full object-cover" loading="lazy" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-                        No Image
-                      </div>
-                    )}
+                    <ProtectedImg
+                      path={h.hostImage?.imagePath}
+                      alt={displayName}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
 
                   <div className="min-w-0">
-                    <div className="font-semibold text-gray-900 truncate">{h.name}</div>
+                    <div className="font-semibold text-gray-900 truncate">{displayName}</div>
                     <div className="text-xs text-gray-500">ID: {h.id}</div>
                   </div>
 
@@ -176,7 +191,7 @@ const AdminHostsPage: React.FC = () => {
                 <button
                   className="px-3 h-9 rounded border border-gray-300 disabled:opacity-50"
                   onClick={() => setPage((p) => Math.min(resp.totalPages, p + 1))}
-                  disabled={page >= resp.totalPages}
+                  disabled={resp && page >= resp.totalPages}
                 >
                   다음
                 </button>
