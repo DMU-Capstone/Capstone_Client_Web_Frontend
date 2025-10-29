@@ -1,205 +1,149 @@
-// API 기본 설정
 export const API_BASE_URL = "http://134.185.99.89:8080";
 
-// API 응답 타입 정의
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
   message?: string;
   error?: string;
-  headers?: Headers; // 헤더 추가
+  headers?: Headers;
 }
 
-// API 에러 타입 정의
-export interface ApiError {
-  message: string;
-  status?: number;
-  code?: string;
-}
-
-// HTTP 메서드 타입
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
-// API 요청 옵션 타입
 export interface ApiRequestOptions {
   method?: HttpMethod;
   headers?: Record<string, string>;
-  body?: any;
+  body?: any;                   // FormData 가능
   timeout?: number;
-  credentials?: RequestCredentials; // 필요 시 쿠키 사용
+  credentials?: RequestCredentials; // 필요 시 'include'
 }
 
-// ──────────────────────────────────────────────────────────────
-// 토큰 가져오기: sessionStorage 우선, 없으면 localStorage
-const getAuthToken = (): string | null =>
-  sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken") || null;
+// ──────────────────────────────────────────────
+// 토큰 보관/가져오기(세션 우선 → 로컬)
+const getToken = (): string | null =>
+  sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
 
-// 기본 헤더(공통). ⚠️ 여기서는 Content-Type을 넣지 않음!
-const getDefaultHeaders = (): Record<string, string> => {
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-  };
-  const token = getAuthToken();
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  return headers;
+export const tokenUtils = {
+  setTokenFromAuthHeader: (authHeader?: string | null) => {
+    if (!authHeader) return;
+    // "Bearer x.y.z" → "x.y.z"
+    const m = authHeader.match(/^Bearer\s+(.+)$/i);
+    const token = m ? m[1] : authHeader;
+    sessionStorage.setItem("accessToken", token);
+    localStorage.setItem("accessToken", token);
+  },
+  setToken: (rawToken: string) => {
+    sessionStorage.setItem("accessToken", rawToken);
+    localStorage.setItem("accessToken", rawToken);
+  },
+  getToken,
+  clear: () => {
+    sessionStorage.removeItem("accessToken");
+    localStorage.removeItem("accessToken");
+  },
 };
 
-// API 요청 함수
+// 포스트맨과 동일한 형태의 공통 헤더 생성
+const buildHeaders = (body?: any, extra?: Record<string, string>) => {
+  const headers: Record<string, string> = { Accept: "application/json" };
+
+  // access 헤더 붙이기(포스트맨과 동일)
+  const access = getToken();
+  if (access) headers["access"] = access;
+
+  // FormData가 아닐 때만 Content-Type 지정
+  const isForm = typeof FormData !== "undefined" && body instanceof FormData;
+  if (!isForm) headers["Content-Type"] = "application/json";
+
+  // (선택) Authorization도 같이 보내고 싶다면 아래 주석 해제
+  // if (access) headers["Authorization"] = `Bearer ${access}`;
+
+  return { ...headers, ...(extra || {}) };
+};
+
+// 공통 요청
 export const apiRequest = async <T = any>(
   endpoint: string,
   options: ApiRequestOptions = {}
 ): Promise<ApiResponse<T>> => {
   const {
     method = "GET",
-    headers: customHeaders = {},
+    headers: customHeaders,
     body,
     timeout = 10000,
-    credentials, // 필요 시 "include"
+    credentials, // 필요 시 'include'
   } = options;
 
   const url = `${API_BASE_URL}${endpoint}`;
-  const defaultHeaders = getDefaultHeaders();
-
-  // FormData 여부 판단
-  const isFormData =
-    typeof FormData !== "undefined" && body instanceof FormData;
-
-  // 최종 헤더 구성
-  const headers: Record<string, string> = { ...defaultHeaders, ...customHeaders };
-
-  // ✨ FormData면 Content-Type을 절대 수동 지정하지 말 것!
-  if (isFormData) {
-    delete headers["Content-Type"];
-    delete headers["content-type"];
-  } else if (body !== undefined && body !== null) {
-    // JSON 바디일 때만 설정
-    headers["Content-Type"] = headers["Content-Type"] || "application/json";
-  }
+  const isForm = typeof FormData !== "undefined" && body instanceof FormData;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  const t = setTimeout(() => controller.abort(), timeout);
 
   try {
-    const response = await fetch(url, {
+    const res = await fetch(url, {
       method,
-      headers,
-      body: isFormData
-        ? (body as FormData)
-        : body !== undefined && body !== null
-        ? JSON.stringify(body)
-        : undefined,
+      headers: buildHeaders(body, customHeaders),
+      body: isForm ? (body as FormData) : body != null ? JSON.stringify(body) : undefined,
       signal: controller.signal,
-      credentials, // 필요하면 { credentials: "include" } 로 호출
+      // refresh 쿠키를 쓰는 엔드포인트에서 필요하면 주석 해제
+      // credentials: credentials ?? "include",
+      credentials: credentials ?? "same-origin",
     });
 
-    clearTimeout(timeoutId);
+    clearTimeout(t);
 
-    // 204 등 비어있는 응답 처리
-    const contentType = response.headers.get("content-type") || "";
-    const hasJson = contentType.includes("application/json");
+    // 로그인/갱신 응답에 Authorization이 오면 저장
+    const authHeader = res.headers.get("authorization");
+    if (authHeader) tokenUtils.setTokenFromAuthHeader(authHeader);
 
-    if (!response.ok) {
-      let message = `HTTP ${response.status}: ${response.statusText}`;
-      if (hasJson) {
-        const errorData = await response.json().catch(() => ({} as any));
-        message = errorData?.message || message;
-      } else {
-        const text = await response.text().catch(() => "");
-        if (text) message = text;
+    const contentType = res.headers.get("content-type") || "";
+    const isJson = contentType.includes("application/json");
+    const payload = isJson ? await res.json().catch(() => undefined) : undefined;
+
+    if (!res.ok) {
+      // 만료 등 401 → 토큰 삭제 및 메시지 반환
+      if (res.status === 401) {
+        tokenUtils.clear();
       }
-      throw new Error(message);
+      return {
+        success: false,
+        message:
+          (payload && (payload.message || payload.error)) ||
+          `HTTP ${res.status}: ${res.statusText}`,
+        headers: res.headers,
+      };
     }
 
-    const data = hasJson ? await response.json() : (undefined as any);
-
-    return {
-      success: true,
-      data,
-      headers: response.headers,
-    };
-  } catch (error) {
-    clearTimeout(timeoutId);
-
-    if (error instanceof Error) {
-      if (error.name === "AbortError") {
-        return { success: false, message: "요청 시간이 초과되었습니다." };
-      }
-      return { success: false, message: error.message };
-    }
-
-    return { success: false, message: "알 수 없는 오류가 발생했습니다." };
+    return { success: true, data: payload as T, headers: res.headers };
+  } catch (e: any) {
+    clearTimeout(t);
+    const msg = e?.name === "AbortError" ? "요청 시간이 초과되었습니다." : e?.message || "알 수 없는 오류가 발생했습니다.";
+    return { success: false, message: msg };
   }
 };
 
-// 편의 메서드들
-export const apiGet = <T = any>(
-  endpoint: string,
-  options?: Omit<ApiRequestOptions, "method" | "body">
-) => apiRequest<T>(endpoint, { ...options, method: "GET" });
+// sugar helpers
+export const apiGet = <T = any>(endpoint: string, opt?: Omit<ApiRequestOptions, "method" | "body">) =>
+  apiRequest<T>(endpoint, { ...opt, method: "GET" });
 
-export const apiPost = <T = any>(
-  endpoint: string,
-  body?: any,
-  options?: Omit<ApiRequestOptions, "method" | "body">
-) => apiRequest<T>(endpoint, { ...options, method: "POST", body });
+export const apiPost = <T = any>(endpoint: string, body?: any, opt?: Omit<ApiRequestOptions, "method">) =>
+  apiRequest<T>(endpoint, { ...opt, method: "POST", body });
 
-export const apiPut = <T = any>(
-  endpoint: string,
-  body?: any,
-  options?: Omit<ApiRequestOptions, "method" | "body">
-) => apiRequest<T>(endpoint, { ...options, method: "PUT", body });
+export const apiPut = <T = any>(endpoint: string, body?: any, opt?: Omit<ApiRequestOptions, "method">) =>
+  apiRequest<T>(endpoint, { ...opt, method: "PUT", body });
 
-export const apiDelete = <T = any>(
-  endpoint: string,
-  options?: Omit<ApiRequestOptions, "method" | "body">
-) => apiRequest<T>(endpoint, { ...options, method: "DELETE" });
+export const apiDelete = <T = any>(endpoint: string, opt?: Omit<ApiRequestOptions, "method" | "body">) =>
+  apiRequest<T>(endpoint, { ...opt, method: "DELETE" });
 
-export const apiPatch = <T = any>(
-  endpoint: string,
-  body?: any,
-  options?: Omit<ApiRequestOptions, "method" | "body">
-) => apiRequest<T>(endpoint, { ...options, method: "PATCH", body });
+export const apiPatch = <T = any>(endpoint: string, body?: any, opt?: Omit<ApiRequestOptions, "method">) =>
+  apiRequest<T>(endpoint, { ...opt, method: "PATCH", body });
 
-// 토큰 유틸
-export const tokenUtils = {
-  setToken: (token: string) => {
-    sessionStorage.setItem("accessToken", token); // 로그인 로직과 일치
-    localStorage.setItem("accessToken", token);    // (선택) 양쪽 저장
-  },
-  getToken: (): string | null => getAuthToken(),
-  removeToken: () => {
-    sessionStorage.removeItem("accessToken");
-    localStorage.removeItem("accessToken");
-  },
-  isTokenValid: (): boolean => {
-    const token = getAuthToken();
-    if (!token) return false;
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      const currentTime = Date.now() / 1000;
-      return payload.exp > currentTime;
-    } catch {
-      return false;
-    }
-  },
-};
-
-// 에러 유틸
+// 에러 로깅 헬퍼(선택)
 export const errorUtils = {
-  getErrorMessage: (error: any): string => {
-    if (typeof error === "string") return error;
-    if (error?.message) return error.message;
-    if (error?.response?.data?.message) return error.response.data.message;
-    return "알 수 없는 오류가 발생했습니다.";
-  },
-  logError: (error: any, context?: string) => {
-    console.error(`[API Error]${context ? ` [${context}]` : ""}:`, error);
-  },
-};
-
-// API 상태(옵셔널)
-export const apiStatus = {
-  isLoading: false,
-  startLoading: () => (apiStatus.isLoading = true),
-  stopLoading: () => (apiStatus.isLoading = false),
+  getErrorMessage: (err: any) =>
+    typeof err === "string"
+      ? err
+      : err?.message || err?.response?.data?.message || "알 수 없는 오류가 발생했습니다.",
+  logError: (err: any, ctx?: string) => console.error(`[API Error]${ctx ? ` [${ctx}]` : ""}`, err),
 };
