@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useMemo, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface SidebarProps {
-  selectedMenu: string;
+  selectedMenu: string; // 폴백용 (경로 매칭이 없을 때만 사용)
   onSelectMenu: (menu: string) => void;
   isOpen?: boolean;
   onClose?: () => void;
@@ -24,7 +24,7 @@ interface MenuItem {
   route?: string;
 }
 
-// [ADD] 세션에서 역할 읽기
+// 세션에서 역할 읽기
 const getCurrentRole = (): "ROLE_ADMIN" | "ROLE_HOST" => {
   try {
     const raw = sessionStorage.getItem("user");
@@ -39,6 +39,7 @@ const getCurrentRole = (): "ROLE_ADMIN" | "ROLE_HOST" => {
 const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
   const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const role = getCurrentRole();
 
@@ -121,7 +122,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
       label: "실시간모니터링",
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2z" />
         </svg>
       ),
       description: "실시간 대시보드",
@@ -149,20 +150,40 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
     },
   ];
 
-  // [ADD] ROLE_HOST 라면 특정 메뉴 숨김
+  // ROLE_HOST 라면 일부 메뉴 숨김
   const hiddenForHost = new Set(["회원관리", "매장관리", "이벤트배너등록"]);
   const visibleMenu =
-    role === "ROLE_HOST" ? menuItems.filter(m => !hiddenForHost.has(m.id)) : menuItems;
+    role === "ROLE_HOST" ? menuItems.filter((m) => !hiddenForHost.has(m.id)) : menuItems;
+
+  // 현재 경로 매칭
+  const isRouteActive = (route?: string) =>
+    !!route && location.pathname.startsWith(route);
+
+  // 현재 경로와 매칭되는 "상위 메뉴 id" 계산
+  const activeMenuIdFromRoute = useMemo(() => {
+    // 1) 상위 route 직접 매칭
+    for (const item of visibleMenu) {
+      if (isRouteActive(item.route)) return item.id;
+      if (item.subMenus?.some((s) => isRouteActive(s.route))) return item.id;
+    }
+    return null;
+  }, [location.pathname, visibleMenu]);
+
+  // 최종 활성화 기준: 경로 매칭 우선, 없으면 selectedMenu 폴백
+  const isItemActive = (item: MenuItem) => {
+    if (activeMenuIdFromRoute) return activeMenuIdFromRoute === item.id;
+    return selectedMenu === item.id;
+  };
 
   const handleMenuClick = (menuId: string, route?: string) => {
-    onSelectMenu(menuId);
+    onSelectMenu(menuId); // 폴백용 상태는 계속 업데이트
     if (route) navigate(route);
   };
 
   return (
     <div
       className={`
-        fixed top-0 left-0  w-72 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out
+        fixed top-0 left-0 w-72 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out
         lg:translate-x-0 lg:static lg:shadow-none lg:border-r lg:border-gray-200 h-screen
       `}
     >
@@ -182,7 +203,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
             <h1 className="text-lg font-bold">
               {role === "ROLE_ADMIN" ? "관리자 패널" : "사업자 패널"}
             </h1>
-            <p className=" text-sm">
+            <p className="text-sm">
               {role === "ROLE_ADMIN" ? "Admin Dashboard" : "Business Dashboard"}
             </p>
           </div>
@@ -192,95 +213,85 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedMenu, onSelectMenu }) => {
       {/* 메뉴 리스트 */}
       <nav className="flex-1 py-4 overflow-y-auto">
         <ul className="space-y-1 px-3">
-          {visibleMenu.map((item) => (
-            <li key={item.id}>
-              <div
-                onMouseEnter={() => setHoveredMenu(item.id)}
-                onMouseLeave={() => setHoveredMenu(null)}
-              >
-                <button
-                  onClick={() => handleMenuClick(item.id, item.route)}
-                  className={`
-                    w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors duration-200
-                    ${
-                      selectedMenu === item.id
-                        ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
-                        : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                    }
-                  `}
+          {visibleMenu.map((item) => {
+            const active = isItemActive(item);
+            return (
+              <li key={item.id}>
+                <div
+                  onMouseEnter={() => setHoveredMenu(item.id)}
+                  onMouseLeave={() => setHoveredMenu(null)}
                 >
-                  <div
+                  <button
+                    onClick={() => handleMenuClick(item.id, item.route)}
                     className={`
-                      flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg mr-3
+                      w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors duration-200
                       ${
-                        selectedMenu === item.id
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-gray-100 text-gray-500"
+                        active
+                          ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
+                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                       }
                     `}
                   >
-                    {item.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p
+                    <div
                       className={`
-                        text-sm font-medium truncate
-                        ${
-                          selectedMenu === item.id ? "text-blue-700" : "text-gray-900"
-                        }
+                        flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg mr-3
+                        ${active ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-500"}
                       `}
                     >
-                      {item.label}
-                    </p>
-                    <p
-                      className={`
-                        text-xs truncate
-                        ${
-                          selectedMenu === item.id ? "text-blue-500" : "text-gray-500"
-                        }
-                      `}
-                    >
-                      {item.description}
-                    </p>
-                  </div>
-                  {item.subMenus && (
-                    <svg
-                      className={`w-4 h-4 transition-transform duration-200 ${
-                        hoveredMenu === item.id ? "rotate-90" : ""
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  )}
-                </button>
+                      {item.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium truncate ${active ? "text-blue-700" : "text-gray-900"}`}>
+                        {item.label}
+                      </p>
+                      <p className={`text-xs truncate ${active ? "text-blue-500" : "text-gray-500"}`}>
+                        {item.description}
+                      </p>
+                    </div>
+                    {item.subMenus && (
+                      <svg
+                        className={`w-4 h-4 transition-transform duration-200 ${hoveredMenu === item.id ? "rotate-90" : ""}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    )}
+                  </button>
 
-                {item.subMenus && hoveredMenu === item.id && (
-                  <ul className="mt-1 space-y-1">
-                    {item.subMenus.map((sub) => (
-                      <li key={sub.id}>
-                        <button
-                          onClick={() => handleMenuClick(sub.id, sub.route)}
-                          className="w-full flex items-center px-8 py-2 text-left hover:bg-gray-50 transition-colors duration-200 rounded-lg"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-700 truncate">
-                              {sub.label}
-                            </p>
-                            <p className="text-xs text-gray-500 truncate">
-                              {sub.description}
-                            </p>
-                          </div>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </li>
-          ))}
+                  {item.subMenus && hoveredMenu === item.id && (
+                    <ul className="mt-1 space-y-1">
+                      {item.subMenus.map((sub) => {
+                        const subActive =
+                          activeMenuIdFromRoute
+                            ? isRouteActive(sub.route) // 경로 우선
+                            : selectedMenu === sub.id; // 폴백
+                        return (
+                          <li key={sub.id}>
+                            <button
+                              onClick={() => handleMenuClick(sub.id, sub.route)}
+                              className={`w-full flex items-center px-8 py-2 text-left rounded-lg transition-colors duration-200
+                                ${subActive ? "bg-blue-50" : "hover:bg-gray-50"}`}
+                            >
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm font-medium truncate ${subActive ? "text-blue-700" : "text-gray-700"}`}>
+                                  {sub.label}
+                                </p>
+                                <p className={`text-xs truncate ${subActive ? "text-blue-500" : "text-gray-500"}`}>
+                                  {sub.description}
+                                </p>
+                              </div>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 
