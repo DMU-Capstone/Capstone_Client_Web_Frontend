@@ -2,9 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 
 // User Components
-import GuestScreen from "./user/UserScreen/GuestQueue";
+import GuestScreen from "./user/UserScreen/GuestScreen";
 import GuestQueue from "./user/UserScreen/GuestQueue";
-import Main from "./user/page/Main";
 import MyPage from "./user/businessUser/page/MyPage";
 
 // Business Chart Components
@@ -16,15 +15,14 @@ import SignupPage from "./user/businessUser/page/SignupPage";
 import HostDetailPage from "./user/businessUser/page/HostDetailPage";
 
 // Admin Components
-import Dashboard from "./admin/page/Dashboard";
 import Login from "./user/page/Login";
 import MemberList from "./admin/page/MemberList";
 import MainBanner from "./admin/page/MainBanner";
 import NoticeList from "./admin/page/NoticeList";
 import StoreList from "./admin/page/StoreList";
 import Landing from "./user/businessUser/page/LandingPage";
-import GuestQPage from "./user/UserScreen/GuestScreen";
 import AdminHostsPage from "./admin/page/QueueSessionPage";
+import AdminHostDetailPage from "./admin/page/AdminHostDetailPage";
 
 function App() {
   return (
@@ -33,8 +31,8 @@ function App() {
         {/* User Routes */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/guest-queue" element={<GuestScreen />} />
-        <Route path="/guest-register" element={<GuestQPage />} />
+        <Route path="/guest-register" element={<GuestScreen />} />
+        <Route path="/guest/queue/:id" element={<GuestQueue />} />
         <Route path="/mypage" element={<MyPage />} />
 
         {/* Business Routes */}
@@ -53,6 +51,7 @@ function App() {
         <Route path="/admin/notices" element={<NoticeList />} />
         <Route path="/admin/stores/list" element={<StoreList />} />
         <Route path="/admin/queue/active" element={<AdminHostsPage />} />
+        <Route path="/admin/stores/:id" element={<AdminHostDetailPage />} />
       </Routes>
     </Router>
   );

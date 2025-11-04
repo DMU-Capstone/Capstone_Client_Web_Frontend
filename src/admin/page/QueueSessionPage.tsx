@@ -3,6 +3,8 @@ import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { apiGet, API_BASE_URL } from "../../utils/api";
 import ProtectedImg from "../components/ProtectedImg";
+import { useNavigate } from "react-router-dom";
+
 
 type PageResp<T> = {
   content: T[];
@@ -47,6 +49,7 @@ const AdminHostsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
 
   const fetchHosts = async () => {
     try {
@@ -158,7 +161,7 @@ const AdminHostsPage: React.FC = () => {
                   <div className="flex lg:justify-end gap-2">
                     <button
                       className="h-9 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 text-sm"
-                      onClick={() => (window.location.href = `/admin/stores/${h.id}`)}
+                      onClick={() => navigate(`/admin/stores/${h.id}`)}
                     >
                       상세
                     </button>
